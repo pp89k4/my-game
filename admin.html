@@ -1,0 +1,211 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة NK News</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Cairo, Arial, sans-serif;
+      background: #f2f5fa;
+      color: #17243a;
+    }
+    header {
+      background: #101f3d;
+      color: white;
+      padding: 22px;
+    }
+    header h1 { margin: 0; font-size: 25px; }
+    header p { margin: 5px 0 0; color: #c8d5e9; }
+    main { max-width: 950px; margin: 28px auto; padding: 0 15px; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-bottom: 22px;
+    }
+    .stat, .news-card {
+      background: white;
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 4px 18px #14284a0d;
+    }
+    .stat strong { display: block; font-size: 28px; color: #1765c1; }
+    .news-card { margin-bottom: 15px; }
+    .news-card h3 { margin-top: 0; }
+    .news-card p { line-height: 1.9; white-space: pre-wrap; }
+    .author { color: #738097; font-size: 13px; }
+    button {
+      border: 0; border-radius: 9px; padding: 10px 17px;
+      font-family: inherit; font-weight: 700; cursor: pointer;
+      margin: 5px 3px;
+    }
+    .approve { background: #168653; color: white; }
+    .reject { background: #e5a12b; color: #17243a; }
+    .delete { background: #d94343; color: white; }
+    .refresh { background: #1765c1; color: white; }
+    #message { padding: 12px 0; color: #53647d; }
+    @media(max-width: 500px) {
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>NK News | لوحة المشرفين</h1>
+    <p>إدارة الأخبار ومراجعة المشاركات</p>
+  </header>
+
+  <main>
+    <div class="stats">
+      <div class="stat">
+        <strong id="pendingCount">0</strong>
+        أخبار تنتظر المراجعة
+      </div>
+      <div class="stat">
+        <strong id="approvedCount">—</strong>
+        الأخبار المنشورة
+      </div>
+    </div>
+
+    <button class="refresh" id="refresh">تحديث الأخبار</button>
+    <button class="delete" id="logout">تسجيل الخروج</button>
+    <h2>الأخبار المعلّقة</h2>
+    <div id="message">جارٍ التحقق من صلاحيات المشرف...</div>
+    <section id="newsList"></section>
+  </main>
+
+  <script type="module">
+    import { firebaseConfig } from "./firebase-config.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import {
+      getAuth, onAuthStateChanged, signOut
+    } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+    import {
+      getFirestore, doc, getDoc, collection, getDocs,
+      query, where, updateDoc, deleteDoc
+    } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const message = document.getElementById("message");
+    const newsList = document.getElementById("newsList");
+    let isAdmin = false;
+
+    function safeText(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;",
+        '"': "&quot;", "'": "&#039;"
+      })[char]);
+    }
+
+    onAuthStateChanged(auth, async user => {
+      if (!user) {
+        location.href = "login.html";
+        return;
+      }
+
+      try {
+        const adminDoc = await getDoc(doc(db, "admins", user.uid));
+
+        if (!adminDoc.exists()) {
+          message.textContent = "ليس لديك صلاحية دخول لوحة المشرفين.";
+          return;
+        }
+
+        isAdmin = true;
+        await loadNews();
+      } catch (error) {
+        message.textContent = "تعذر التحقق من الصلاحيات: " + error.message;
+      }
+    });
+
+    async function loadNews() {
+      if (!isAdmin) return;
+
+      message.textContent = "جارٍ تحميل الأخبار...";
+      newsList.innerHTML = "";
+
+      try {
+        const pendingQuery = query(
+          collection(db, "news"),
+          where("status", "==", "pending")
+        );
+        const approvedQuery = query(
+          collection(db, "news"),
+          where("status", "==", "approved")
+        );
+
+        const [pendingSnapshot, approvedSnapshot] = await Promise.all([
+          getDocs(pendingQuery),
+          getDocs(approvedQuery)
+        ]);
+
+        document.getElementById("pendingCount").textContent =
+          pendingSnapshot.size;
+        document.getElementById("approvedCount").textContent =
+          approvedSnapshot.size;
+
+        if (pendingSnapshot.empty) {
+          message.textContent = "لا توجد أخبار تنتظر المراجعة حاليًا.";
+          return;
+        }
+
+        message.textContent = "";
+
+        pendingSnapshot.forEach(item => {
+          const news = item.data();
+          const card = document.createElement("article");
+          card.className = "news-card";
+          card.innerHTML = `
+            <h3>${safeText(news.title)}</h3>
+            <p>${safeText(news.content)}</p>
+            <div class="author">الكاتب: ${safeText(news.author)}</div>
+            <button class="approve" data-action="approve" data-id="${item.id}">قبول ونشر</button>
+            <button class="reject" data-action="reject" data-id="${item.id}">رفض</button>
+            <button class="delete" data-action="delete" data-id="${item.id}">حذف</button>
+          `;
+          newsList.appendChild(card);
+        });
+      } catch (error) {
+        message.textContent = "حدث خطأ أثناء تحميل الأخبار: " + error.message;
+      }
+    }
+
+    newsList.addEventListener("click", async event => {
+      const button = event.target.closest("button[data-action]");
+      if (!button || !isAdmin) return;
+
+      const id = button.dataset.id;
+      const action = button.dataset.action;
+
+      try {
+        if (action === "delete") {
+          if (!confirm("هل تريد حذف هذا الخبر نهائيًا؟")) return;
+          await deleteDoc(doc(db, "news", id));
+        } else {
+          const newStatus = action === "approve" ? "approved" : "rejected";
+          await updateDoc(doc(db, "news", id), { status: newStatus });
+        }
+
+        await loadNews();
+      } catch (error) {
+        alert("لم تنجح العملية: " + error.message);
+      }
+    });
+
+    document.getElementById("refresh").onclick = loadNews;
+    document.getElementById("logout").onclick = async () => {
+      await signOut(auth);
+      location.href = "login.html";
+    };
+  </script>
+</body>
+      </html>
+  
