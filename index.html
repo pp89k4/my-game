@@ -7,47 +7,226 @@
 <title>NK News - أخبار العالم</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f3f5f9;color:#172033}
-header{background:#101c32;color:white;padding:20px;text-align:center}
-header h1{margin:0;font-size:30px}
-nav{background:#193253;padding:13px;text-align:center}
-nav a{color:white;text-decoration:none;margin:0 12px}
-.hero{background:#152d50;color:white;padding:45px 20px;text-align:center}
-.hero h2{font-size:30px}
-.container{max-width:850px;margin:25px auto;padding:15px}
+body{margin:0;font-family:Arial,sans-serif;background:#f2f4f8;color:#172033}
+header{background:#101c32;color:white;padding:22px;text-align:center}
+header h1{margin:0;font-size:32px}
+nav{background:#193253;padding:15px;text-align:center}
+nav a{color:white;text-decoration:none;margin:10px}
+.hero{background:#152d50;color:white;padding:40px 15px;text-align:center}
+.container{max-width:850px;margin:25px auto;padding:12px}
 .card{background:white;border-radius:12px;padding:20px;margin:15px 0;box-shadow:0 3px 12px #0001}
-button{background:#2463eb;color:white;border:0;border-radius:8px;padding:12px 20px;cursor:pointer}
+input,textarea{width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:8px;font-family:Arial}
+button{background:#2463eb;color:white;border:0;border-radius:8px;padding:12px 20px;margin:5px;cursor:pointer}
+button.secondary{background:#475569}
+.news{border-right:4px solid #2463eb}
+small{color:#777}
 footer{text-align:center;padding:25px;color:#777}
+.hidden{display:none}
 </style>
 </head>
 <body>
-<header><h1>🌍 NK NEWS</h1><p>العالم بين يديك</p></header>
+
+<header>
+<h1>🌍 NK NEWS</h1>
+<p>العالم بين يديك</p>
+</header>
+
 <nav>
 <a href="#">الرئيسية</a>
 <a href="#publish">نشر خبر</a>
-<a href="#login">تسجيل الدخول</a>
+<a href="#account">حسابي</a>
 </nav>
+
 <section class="hero">
 <h2>أخبار العالم من مصدرها</h2>
-<p>شارك الأخبار وتابع آخر الأحداث حول العالم</p>
+<p>شارك الأخبار وتابع الأحداث حول العالم</p>
 </section>
+
 <main class="container">
+
 <div class="card">
-<h2>مرحبًا بك في NK News</h2>
-<p>منصة إخبارية مجتمعية جديدة.</p>
-<p>ستظهر الأخبار المنشورة والمعتمدة هنا.</p>
+<h2>📰 آخر الأخبار</h2>
+<div id="newsList">جاري تحميل الأخبار...</div>
 </div>
+
+<div class="card" id="account">
+<h2>👤 حساب المستخدم</h2>
+<input id="email" type="email" placeholder="البريد الإلكتروني">
+<input id="password" type="password" placeholder="كلمة المرور">
+<button id="registerBtn">إنشاء حساب</button>
+<button id="loginBtn">تسجيل الدخول</button>
+<button id="logoutBtn" class="secondary hidden">تسجيل الخروج</button>
+<p id="accountStatus">أنت غير مسجل الدخول</p>
+</div>
+
 <div class="card" id="publish">
-<h2>نشر خبر</h2>
-<p>قريبًا: نظام نشر الأخبار للأعضاء.</p>
-<button onclick="alert('سيتم تفعيل النشر بعد ربط قاعدة البيانات')">انشر خبرًا</button>
+<h2>✍️ انشر خبرًا</h2>
+<p>يجب تسجيل الدخول أولًا لنشر الأخبار.</p>
+<input id="newsTitle" placeholder="عنوان الخبر">
+<textarea id="newsContent" rows="6" placeholder="اكتب تفاصيل الخبر ومصدره"></textarea>
+<button id="publishBtn">إرسال الخبر للمراجعة</button>
+<p id="publishStatus"></p>
 </div>
-<div class="card" id="login">
-<h2>تسجيل الدخول</h2>
-<p>قريبًا: نظام الحسابات والإدارة.</p>
-</div>
+
 </main>
+
 <footer>© 2026 NK News - جميع الحقوق محفوظة</footer>
+
+<script type="module">
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+
+import {
+getAuth,
+createUserWithEmailAndPassword,
+signInWithEmailAndPassword,
+signOut,
+onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+
+import {
+getFirestore,
+collection,
+addDoc,
+query,
+where,
+orderBy,
+onSnapshot,
+serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+// إعدادات Firebase
+const firebaseConfig = {
+apiKey: "AIzaSyB7VUtnG-xNVapnAeEZMs2ZIgRh2zSXfLA",
+authDomain: "nk-news-6f73f.firebaseapp.com",
+projectId: "nk-news-6f73f",
+storageBucket: "nk-news-6f73f.firebasestorage.app",
+messagingSenderId: "826756944386",
+appId: "1:826756944386:web:3e4be9e69cd4c5c3cfcd1b",
+measurementId: "G-QCZTHSBWCF"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const email = document.getElementById("email");
+const password = document.getElementById("password");
+const accountStatus = document.getElementById("accountStatus");
+const logoutBtn = document.getElementById("logoutBtn");
+
+document.getElementById("registerBtn").onclick = async () => {
+try {
+await createUserWithEmailAndPassword(
+auth,email.value,password.value
+);
+alert("تم إنشاء الحساب بنجاح!");
+} catch(e) {
+alert(e.message);
+}
+};
+
+document.getElementById("loginBtn").onclick = async () => {
+try {
+await signInWithEmailAndPassword(
+auth,email.value,password.value
+);
+alert("تم تسجيل الدخول!");
+} catch(e) {
+alert(e.message);
+}
+};
+
+logoutBtn.onclick = async () => {
+await signOut(auth);
+};
+
+onAuthStateChanged(auth,user => {
+if(user) {
+accountStatus.textContent = "مسجل الدخول: " + user.email;
+logoutBtn.classList.remove("hidden");
+} else {
+accountStatus.textContent = "أنت غير مسجل الدخول";
+logoutBtn.classList.add("hidden");
+}
+});
+
+document.getElementById("publishBtn").onclick = async () => {
+const user = auth.currentUser;
+const title = document.getElementById("newsTitle").value.trim();
+const content = document.getElementById("newsContent").value.trim();
+const status = document.getElementById("publishStatus");
+
+if(!user) {
+status.textContent = "سجل الدخول أولًا.";
+return;
+}
+
+if(!title || !content) {
+status.textContent = "اكتب عنوان الخبر وتفاصيله.";
+return;
+}
+
+try {
+await addDoc(collection(db,"news"),{
+title: title,
+content: content,
+author: user.email,
+uid: user.uid,
+status: "pending",
+createdAt: serverTimestamp()
+});
+
+status.textContent = "تم إرسال الخبر للمراجعة بنجاح!";
+document.getElementById("newsTitle").value = "";
+document.getElementById("newsContent").value = "";
+
+} catch(e) {
+status.textContent = "تعذر إرسال الخبر: " + e.message;
+}
+};
+
+// عرض الأخبار المعتمدة فقط
+const newsQuery = query(
+collection(db,"news"),
+where("status","==","approved"),
+orderBy("createdAt","desc")
+);
+
+onSnapshot(newsQuery, snapshot => {
+const list = document.getElementById("newsList");
+list.innerHTML = "";
+
+if(snapshot.empty) {
+list.textContent = "لا توجد أخبار منشورة حتى الآن.";
+return;
+}
+
+snapshot.forEach(doc => {
+const data = doc.data();
+
+const card = document.createElement("article");
+card.className = "card news";
+
+const title = document.createElement("h3");
+title.textContent = data.title || "";
+
+const content = document.createElement("p");
+content.textContent = data.content || "";
+
+const author = document.createElement("small");
+author.textContent = "الناشر: " + (data.author || "غير معروف");
+
+card.append(title,content,author);
+list.appendChild(card);
+});
+
+}, error => {
+document.getElementById("newsList").textContent =
+"تعذر تحميل الأخبار: " + error.message;
+});
+</script>
+
 </body>
   </html>
   
