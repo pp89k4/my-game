@@ -1,0 +1,312 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>تسجيل الدخول | NK News</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Cairo', sans-serif;
+  background: #f1f4f9;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.wrapper {
+  width: 100%;
+  max-width: 430px;
+}
+
+.brand {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.logo {
+  font-size: 36px;
+  font-weight: 800;
+  color: #142746;
+}
+
+.logo span {
+  color: #2870ec;
+}
+
+.brand p {
+  color: #758198;
+  margin: 0;
+}
+
+.card {
+  background: white;
+  padding: 32px 26px;
+  border-radius: 20px;
+  box-shadow: 0 12px 45px #14274612;
+}
+
+.card h2 {
+  color: #142746;
+  margin: 0 0 5px;
+  font-size: 25px;
+}
+
+.subtitle {
+  color: #8993a5;
+  font-size: 14px;
+  margin-bottom: 25px;
+}
+
+.tabs {
+  display: flex;
+  background: #f0f3f8;
+  padding: 5px;
+  border-radius: 10px;
+  margin-bottom: 22px;
+}
+
+.tabs button {
+  width: 50%;
+  border: 0;
+  padding: 10px;
+  border-radius: 8px;
+  font-family: inherit;
+  cursor: pointer;
+  background: transparent;
+  color: #657188;
+  font-weight: 700;
+}
+
+.tabs button.active {
+  background: white;
+  color: #2463eb;
+  box-shadow: 0 2px 8px #0000000c;
+}
+
+label {
+  display: block;
+  font-size: 14px;
+  color: #35435a;
+  font-weight: 700;
+  margin: 13px 0 6px;
+}
+
+input {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #e0e5ed;
+  border-radius: 10px;
+  font-family: inherit;
+  outline: none;
+  background: #fafbfd;
+  direction: ltr;
+  text-align: left;
+}
+
+input:focus {
+  border-color: #2870ec;
+  background: white;
+}
+
+.submit {
+  width: 100%;
+  border: 0;
+  padding: 14px;
+  margin-top: 23px;
+  border-radius: 10px;
+  background: #2463eb;
+  color: white;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.submit:disabled {
+  opacity: .6;
+}
+
+#message {
+  font-size: 13px;
+  text-align: center;
+  margin-top: 15px;
+  color: #d13c3c;
+}
+
+.back {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.back a {
+  text-decoration: none;
+  color: #2463eb;
+  font-size: 14px;
+}
+
+footer {
+  text-align: center;
+  color: #a1aaba;
+  font-size: 12px;
+  margin-top: 25px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+  <div class="brand">
+    <div class="logo">🌍 NK <span>NEWS</span></div>
+    <p>العالم بين يديك</p>
+  </div>
+
+  <div class="card">
+
+    <h2 id="heading">مرحبًا بعودتك</h2>
+    <div class="subtitle" id="subtitle">
+      سجّل الدخول لمتابعة أخبار العالم
+    </div>
+
+    <div class="tabs">
+      <button class="active" id="loginTab">تسجيل الدخول</button>
+      <button id="registerTab">إنشاء حساب</button>
+    </div>
+
+    <form id="authForm">
+
+      <label>البريد الإلكتروني</label>
+      <input id="email" type="email"
+      placeholder="example@email.com" required>
+
+      <label>كلمة المرور</label>
+      <input id="password" type="password"
+      placeholder="كلمة المرور" minlength="6" required>
+
+      <button class="submit" id="submitBtn">
+        تسجيل الدخول
+      </button>
+
+    </form>
+
+    <div id="message"></div>
+
+  </div>
+
+  <div class="back">
+    <a href="index.html">← العودة إلى الصفحة الرئيسية</a>
+  </div>
+
+  <footer>© 2026 NK News · جميع الحقوق محفوظة</footer>
+
+</div>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+
+import {
+getAuth,
+createUserWithEmailAndPassword,
+signInWithEmailAndPassword,
+onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+
+import { firebaseConfig }
+from "./firebase-config.js";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+let mode = "login";
+
+const loginTab = document.getElementById("loginTab");
+const registerTab = document.getElementById("registerTab");
+const heading = document.getElementById("heading");
+const subtitle = document.getElementById("subtitle");
+const submitBtn = document.getElementById("submitBtn");
+const message = document.getElementById("message");
+
+function setMode(newMode) {
+  mode = newMode;
+  message.textContent = "";
+
+  loginTab.classList.toggle("active", mode === "login");
+  registerTab.classList.toggle("active", mode === "register");
+
+  if (mode === "login") {
+    heading.textContent = "مرحبًا بعودتك";
+    subtitle.textContent = "سجّل الدخول لمتابعة أخبار العالم";
+    submitBtn.textContent = "تسجيل الدخول";
+  } else {
+    heading.textContent = "انضم إلى NK News";
+    subtitle.textContent = "أنشئ حسابك وشارك الأخبار";
+    submitBtn.textContent = "إنشاء حساب";
+  }
+}
+
+loginTab.onclick = () => setMode("login");
+registerTab.onclick = () => setMode("register");
+
+onAuthStateChanged(auth, user => {
+  if (user) {
+    window.location.href = "index.html";
+  }
+});
+
+document.getElementById("authForm").onsubmit = async (e) => {
+  e.preventDefault();
+
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  submitBtn.disabled = true;
+  message.textContent = "جارٍ تنفيذ طلبك...";
+
+  try {
+    if (mode === "login") {
+      await signInWithEmailAndPassword(auth, email, password);
+    } else {
+      await createUserWithEmailAndPassword(auth, email, password);
+    }
+
+    message.style.color = "green";
+    message.textContent = "تم بنجاح!";
+
+  } catch (error) {
+    message.style.color = "#d13c3c";
+
+    const errors = {
+      "auth/email-already-in-use": "هذا البريد مسجل بالفعل.",
+      "auth/invalid-email": "البريد الإلكتروني غير صحيح.",
+      "auth/invalid-credential": "البريد أو كلمة المرور غير صحيحة.",
+      "auth/weak-password": "كلمة المرور ضعيفة.",
+      "auth/network-request-failed": "تحقق من اتصال الإنترنت."
+    };
+
+    message.textContent =
+      errors[error.code] || "حدث خطأ، حاول مرة أخرى.";
+  }
+
+  submitBtn.disabled = false;
+};
+
+</script>
+
+</body>
+  </html>
+  
