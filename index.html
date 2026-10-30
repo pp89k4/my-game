@@ -3,230 +3,634 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NK News - أخبار العالم</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NK News | أخبار العالم</title>
+<meta name="description" content="NK News - منصة إخبارية لمتابعة أخبار العالم ومشاركة الأخبار.">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f2f4f8;color:#172033}
-header{background:#101c32;color:white;padding:22px;text-align:center}
-header h1{margin:0;font-size:32px}
-nav{background:#193253;padding:15px;text-align:center}
-nav a{color:white;text-decoration:none;margin:10px}
-.hero{background:#152d50;color:white;padding:40px 15px;text-align:center}
-.container{max-width:850px;margin:25px auto;padding:12px}
-.card{background:white;border-radius:12px;padding:20px;margin:15px 0;box-shadow:0 3px 12px #0001}
-input,textarea{width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:8px;font-family:Arial}
-button{background:#2463eb;color:white;border:0;border-radius:8px;padding:12px 20px;margin:5px;cursor:pointer}
-button.secondary{background:#475569}
-.news{border-right:4px solid #2463eb}
-small{color:#777}
-footer{text-align:center;padding:25px;color:#777}
-.hidden{display:none}
+:root {
+  --navy:#08172e;
+  --blue:#1769e0;
+  --light:#f3f6fb;
+  --text:#18263c;
+  --muted:#718096;
+  --white:#fff;
+}
+* {box-sizing:border-box}
+html {scroll-behavior:smooth}
+body {
+  margin:0;
+  font-family:'Cairo',Arial,sans-serif;
+  background:var(--light);
+  color:var(--text);
+}
+a {text-decoration:none;color:inherit}
+button,input,textarea {font:inherit}
+button {cursor:pointer}
+.container {width:min(1180px,92%);margin:auto}
+
+/* Header */
+.topbar {
+  background:#061225;
+  color:#cbd5e1;
+  font-size:12px;
+  padding:8px 0;
+}
+.topbar .container {
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+}
+header {
+  background:var(--navy);
+  color:white;
+  position:sticky;
+  top:0;
+  z-index:10;
+  box-shadow:0 5px 25px #07152c22;
+}
+.header-main {
+  min-height:83px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+}
+.logo {
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.logo-mark {
+  width:49px;height:49px;
+  border-radius:14px;
+  background:linear-gradient(135deg,#2787ff,#1050b8);
+  display:grid;place-items:center;
+  font-size:21px;font-weight:900;
+  box-shadow:0 5px 18px #1769e055;
+}
+.logo-name {font-size:25px;font-weight:900;letter-spacing:1px}
+.logo-name span {color:#4b9aff}
+.logo small {display:block;color:#aabbd2;font-size:10px;font-weight:500}
+nav {display:flex;align-items:center;gap:25px}
+nav a {font-size:13px;color:#d8e2f1;transition:.2s}
+nav a:hover {color:#61a7ff}
+.header-actions {display:flex;align-items:center;gap:9px}
+.btn {
+  border:0;border-radius:10px;
+  padding:10px 17px;
+  font-weight:800;font-size:12px;
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:7px;
+}
+.btn-blue {background:var(--blue);color:white}
+.btn-blue:hover {background:#0e55c4}
+.btn-outline {border:1px solid #50617b;color:white;background:transparent}
+.menu-button {display:none;background:transparent;color:white;border:0;font-size:25px}
+
+/* Breaking news */
+.breaking {
+  background:#fff;
+  border-bottom:1px solid #e7edf5;
+}
+.breaking-inner {display:flex;align-items:center;min-height:47px;gap:15px}
+.breaking-label {
+  background:#e63e46;color:white;
+  padding:5px 13px;border-radius:5px;
+  font-size:11px;font-weight:900;white-space:nowrap;
+}
+#tickerText {font-size:12px;color:#34445d;overflow:hidden}
+
+/* Hero */
+.hero {padding:35px 0 25px}
+.hero-grid {
+  display:grid;
+  grid-template-columns:1.45fr .8fr;
+  gap:18px;
+}
+.hero-main {
+  min-height:355px;
+  border-radius:20px;
+  overflow:hidden;
+  position:relative;
+  display:flex;align-items:end;
+  background:
+    linear-gradient(0deg,#061225 0%,#061225c9 35%,transparent 100%),
+    radial-gradient(circle at 70% 25%,#2874cb,#142c53 48%,#07172f);
+  color:white;
+  padding:32px;
+}
+.hero-main:before {
+  content:"NK";
+  position:absolute;
+  font-size:210px;font-weight:900;
+  color:#ffffff0c;
+  left:35px;top:-45px;
+  transform:rotate(-12deg);
+}
+.hero-content {position:relative;z-index:1}
+.eyebrow {
+  display:inline-block;
+  background:#1769e0;color:white;
+  padding:5px 12px;border-radius:5px;
+  font-size:11px;font-weight:800;
+  margin-bottom:12px;
+}
+.hero-main h1 {font-size:34px;line-height:1.6;margin:0 0 10px;font-weight:900}
+.hero-main p {font-size:13px;color:#d2dceb;line-height:2;margin:0}
+.hero-side {display:grid;grid-template-rows:1fr 1fr;gap:18px}
+.side-card {
+  border-radius:18px;
+  padding:23px;
+  color:white;
+  display:flex;flex-direction:column;justify-content:end;
+  background:linear-gradient(135deg,#174c92,#081a35);
+  min-height:165px;
+  position:relative;overflow:hidden;
+}
+.side-card:nth-child(2) {background:linear-gradient(135deg,#126c77,#082b3c)}
+.side-card:after {
+  content:"";position:absolute;
+  width:170px;height:170px;border-radius:50%;
+  border:1px solid #ffffff25;
+  left:-45px;top:-65px;
+  box-shadow:0 0 0 25px #ffffff08,0 0 0 50px #ffffff05;
+}
+.side-card h3 {position:relative;z-index:1;font-size:19px;margin:8px 0}
+.side-card p {position:relative;z-index:1;font-size:11px;color:#d4e3f5;margin:0}
+
+/* Sections */
+.section {padding:25px 0 40px}
+.section-heading {
+  display:flex;justify-content:space-between;
+  align-items:center;gap:15px;
+  margin-bottom:20px;
+}
+.section-heading h2 {font-size:23px;margin:0;font-weight:900}
+.section-heading h2 span {color:var(--blue)}
+.section-heading p {font-size:11px;color:var(--muted);margin:4px 0 0}
+.search-box {
+  display:flex;align-items:center;gap:8px;
+  background:white;border:1px solid #e3eaf3;
+  border-radius:11px;padding:0 13px;
+  width:min(290px,100%);
+}
+.search-box input {
+  border:0;outline:0;background:transparent;
+  padding:12px 0;width:100%;font-size:12px;
+}
+.news-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:17px;
+}
+.news-card {
+  background:white;border-radius:15px;
+  overflow:hidden;border:1px solid #e9eef5;
+  transition:.25s;
+}
+.news-card:hover {
+  transform:translateY(-4px);
+  box-shadow:0 12px 30px #102b5012;
+}
+.news-art {
+  height:145px;
+  display:grid;place-items:center;
+  background:linear-gradient(135deg,#102e58,#2475ca);
+  color:#ffffffd9;font-size:38px;font-weight:900;
+  position:relative;overflow:hidden;
+}
+.news-art:after {
+  content:"";position:absolute;width:150px;height:150px;
+  border:1px solid #ffffff35;border-radius:50%;
+  box-shadow:0 0 0 22px #ffffff0b,0 0 0 45px #ffffff0b;
+}
+.news-body {padding:17px}
+.news-meta {font-size:10px;color:var(--muted);margin-bottom:8px}
+.news-body h3 {font-size:16px;line-height:1.8;margin:0 0 9px}
+.news-body p {font-size:12px;color:#64748b;line-height:2;margin:0 0 14px;white-space:pre-wrap}
+.news-footer {
+  border-top:1px solid #edf1f6;
+  padding-top:11px;
+  display:flex;justify-content:space-between;
+  font-size:10px;color:#7b8ba1;
+}
+.empty {
+  grid-column:1/-1;
+  text-align:center;background:white;
+  border-radius:15px;padding:45px 15px;
+  color:var(--muted);font-size:13px;
+}
+
+/* Publish section */
+.publish-section {
+  background:linear-gradient(135deg,#0b1c37,#123d76);
+  color:white;padding:42px 0;
+}
+.publish-grid {
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:35px;align-items:center;
+}
+.publish-info h2 {font-size:29px;margin:0 0 12px;font-weight:900}
+.publish-info p {color:#c4d4ea;font-size:13px;line-height:2.2}
+.publish-form {
+  background:white;color:var(--text);
+  padding:23px;border-radius:16px;
+}
+.publish-form h3 {margin:0 0 15px;font-size:18px}
+.field {margin-bottom:12px}
+.field label {display:block;font-size:11px;font-weight:800;margin-bottom:6px}
+.field input,.field textarea {
+  width:100%;border:1px solid #dce5f0;
+  border-radius:9px;padding:12px;
+  outline:none;font-size:12px;background:#f9fbfe;
+}
+.field input:focus,.field textarea:focus {border-color:var(--blue)}
+.field textarea {min-height:115px;resize:vertical}
+.publish-form button {width:100%;padding:12px}
+#formMessage {font-size:11px;margin-top:10px;color:#64748b;line-height:1.8}
+
+/* Footer */
+footer {background:#061225;color:white;padding:35px 0 18px}
+.footer-grid {
+  display:grid;grid-template-columns:1.4fr 1fr 1fr;
+  gap:30px;padding-bottom:25px;
+}
+footer h3 {font-size:17px;margin:0 0 12px}
+footer p,footer a {font-size:11px;color:#aabbd2;line-height:2.2}
+.footer-links {display:grid;gap:5px}
+.copyright {
+  border-top:1px solid #ffffff18;
+  padding-top:15px;text-align:center;
+  color:#8294ae;font-size:10px;
+}
+
+@media(max-width:850px) {
+  nav {gap:12px}
+  nav a {font-size:11px}
+  .header-actions .btn {padding:9px 11px}
+  .hero-grid {grid-template-columns:1fr}
+  .hero-side {grid-template-columns:1fr 1fr;grid-template-rows:1fr}
+  .news-grid {grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px) {
+  .topbar .container {font-size:10px}
+  .header-main {min-height:70px}
+  .logo-name {font-size:21px}
+  .logo-mark {width:42px;height:42px}
+  nav {
+    display:none;position:absolute;top:70px;right:0;left:0;
+    background:#0b1c37;padding:18px 5%;
+    flex-direction:column;align-items:stretch;
+  }
+  nav.open {display:flex}
+  nav a {font-size:13px;padding:7px}
+  .header-actions .btn-outline {display:none}
+  .menu-button {display:block}
+  .hero {padding-top:20px}
+  .hero-main {min-height:300px;padding:22px}
+  .hero-main h1 {font-size:25px}
+  .hero-side {gap:10px}
+  .side-card {padding:15px;min-height:145px}
+  .side-card h3 {font-size:15px}
+  .section-heading {align-items:flex-start;flex-direction:column}
+  .search-box {width:100%}
+  .news-grid {grid-template-columns:1fr}
+  .news-art {height:155px}
+  .publish-grid {grid-template-columns:1fr;gap:15px}
+  .publish-info h2 {font-size:24px}
+  .footer-grid {grid-template-columns:1fr;gap:15px}
+}
 </style>
 </head>
+
 <body>
 
+<div class="topbar">
+  <div class="container">
+    <span>🌍 NK News | أخبار العالم بين يديك</span>
+    <span>منصة إخبارية مفتوحة للجميع</span>
+  </div>
+</div>
+
 <header>
-<h1>🌍 NK NEWS</h1>
-<p>العالم بين يديك</p>
+  <div class="container header-main">
+    <a class="logo" href="index.html">
+      <div class="logo-mark">NK</div>
+      <div>
+        <div class="logo-name">NK <span>NEWS</span></div>
+        <small>صوت العالم في مكان واحد</small>
+      </div>
+    </a>
+
+    <nav id="navigation">
+      <a href="#home">الرئيسية</a>
+      <a href="#latest">آخر الأخبار</a>
+      <a href="#publish">انشر خبرًا</a>
+      <a href="#about">عن المنصة</a>
+      <a href="admin.html">المشرفون</a>
+    </nav>
+
+    <div class="header-actions">
+      <a class="btn btn-outline" id="loginButton" href="login.html">دخول الحساب</a>
+      <button class="btn btn-blue" id="logoutButton" hidden>خروج</button>
+      <button class="menu-button" id="menuButton" aria-label="القائمة">☰</button>
+    </div>
+  </div>
 </header>
 
-<nav>
-<a href="#">الرئيسية</a>
-<a href="#publish">نشر خبر</a>
-<a href="#account">حسابي</a>
-</nav>
-
-<section class="hero">
-<h2>أخبار العالم من مصدرها</h2>
-<p>شارك الأخبار وتابع الأحداث حول العالم</p>
-</section>
-
-<main class="container">
-
-<div class="card">
-<h2>📰 آخر الأخبار</h2>
-<div id="newsList">جاري تحميل الأخبار...</div>
+<div class="breaking">
+  <div class="container breaking-inner">
+    <span class="breaking-label">● عاجل</span>
+    <div id="tickerText">مرحبًا بك في NK News — تابع آخر الأخبار المنشورة.</div>
+  </div>
 </div>
 
-<div class="card" id="account">
-<h2>👤 حساب المستخدم</h2>
-<input id="email" type="email" placeholder="البريد الإلكتروني">
-<input id="password" type="password" placeholder="كلمة المرور">
-<button id="registerBtn">إنشاء حساب</button>
-<button id="loginBtn">تسجيل الدخول</button>
-<button id="logoutBtn" class="secondary hidden">تسجيل الخروج</button>
-<p id="accountStatus">أنت غير مسجل الدخول</p>
-</div>
+<main>
+  <section class="hero container" id="home">
+    <div class="hero-grid">
+      <div class="hero-main">
+        <div class="hero-content">
+          <span class="eyebrow">مرحبًا بك في NK NEWS</span>
+          <h1>العالم يتغير كل لحظة...<br>كن أول من يعرف.</h1>
+          <p>منصة إخبارية تجمع الأخبار من مختلف أنحاء العالم، وتمنح الجميع فرصة مشاركة الأخبار والمعلومات.</p>
+          <a href="#latest" class="btn btn-blue" style="margin-top:18px">اكتشف آخر الأخبار ←</a>
+        </div>
+      </div>
 
-<div class="card" id="publish">
-<h2>✍️ انشر خبرًا</h2>
-<p>يجب تسجيل الدخول أولًا لنشر الأخبار.</p>
-<input id="newsTitle" placeholder="عنوان الخبر">
-<textarea id="newsContent" rows="6" placeholder="اكتب تفاصيل الخبر ومصدره"></textarea>
-<button id="publishBtn">إرسال الخبر للمراجعة</button>
-<p id="publishStatus"></p>
-</div>
+      <div class="hero-side">
+        <div class="side-card">
+          <span>🌐 تغطية عالمية</span>
+          <h3>أخبار من كل مكان</h3>
+          <p>تابع المستجدات والأحداث حول العالم.</p>
+        </div>
+        <div class="side-card">
+          <span>✍️ شارك معنا</span>
+          <h3>خبرك يستحق أن يُقرأ</h3>
+          <p>أرسل خبرًا ليتم مراجعته قبل نشره.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
+  <section class="section container" id="latest">
+    <div class="section-heading">
+      <div>
+        <h2>آخر <span>الأخبار</span></h2>
+        <p>أحدث الأخبار التي تمت مراجعتها ونشرها على المنصة</p>
+      </div>
+      <div class="search-box">
+        <span>⌕</span>
+        <input id="searchInput" type="search" placeholder="ابحث في الأخبار...">
+      </div>
+    </div>
+
+    <div id="newsGrid" class="news-grid">
+      <div class="empty">جارٍ تحميل الأخبار...</div>
+    </div>
+  </section>
+
+  <section class="publish-section" id="publish">
+    <div class="container publish-grid">
+      <div class="publish-info">
+        <span class="eyebrow">كن جزءًا من NK NEWS</span>
+        <h2>لديك خبر مهم؟<br>شاركه مع العالم.</h2>
+        <p>يمكنك إرسال الأخبار والمعلومات إلى NK News. سيقوم فريق الإشراف بمراجعة مشاركتك، وبعد الموافقة ستظهر للجميع.</p>
+        <p>📌 جميع المشاركات تخضع للمراجعة قبل النشر.</p>
+      </div>
+
+      <form class="publish-form" id="publishForm">
+        <h3>📝 إرسال خبر جديد</h3>
+        <div class="field">
+          <label for="newsTitle">عنوان الخبر</label>
+          <input id="newsTitle" maxlength="120" required placeholder="اكتب عنوانًا واضحًا للخبر">
+        </div>
+        <div class="field">
+          <label for="newsContent">تفاصيل الخبر</label>
+          <textarea id="newsContent" maxlength="5000" required placeholder="اكتب تفاصيل الخبر هنا..."></textarea>
+        </div>
+        <button class="btn btn-blue" type="submit" id="submitButton">إرسال الخبر للمراجعة</button>
+        <div id="formMessage">يجب تسجيل الدخول قبل إرسال خبر.</div>
+      </form>
+    </div>
+  </section>
 </main>
 
-<footer>© 2026 NK News - جميع الحقوق محفوظة</footer>
+<footer id="about">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="logo">
+          <div class="logo-mark">NK</div>
+          <div class="logo-name">NK <span>NEWS</span></div>
+        </div>
+        <p>منصة إخبارية تهدف إلى مشاركة الأخبار والمعلومات من مختلف أنحاء العالم.</p>
+      </div>
+      <div>
+        <h3>روابط سريعة</h3>
+        <div class="footer-links">
+          <a href="#home">الرئيسية</a>
+          <a href="#latest">آخر الأخبار</a>
+          <a href="#publish">انشر خبرًا</a>
+        </div>
+      </div>
+      <div>
+        <h3>إدارة المنصة</h3>
+        <div class="footer-links">
+          <a href="login.html">تسجيل الدخول</a>
+          <a href="admin.html">لوحة المشرفين</a>
+        </div>
+      </div>
+    </div>
+    <div class="copyright">© 2026 NK News — جميع الحقوق محفوظة</div>
+  </div>
+</footer>
 
 <script type="module">
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import { firebaseConfig } from "./firebase-config.js";
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import {
-getAuth,
-createUserWithEmailAndPassword,
-signInWithEmailAndPassword,
-signOut,
-onAuthStateChanged
+  getAuth, onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-
 import {
-getFirestore,
-collection,
-addDoc,
-query,
-where,
-orderBy,
-onSnapshot,
-serverTimestamp
+  getFirestore, collection, getDocs, query, where,
+  addDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
-
-// إعدادات Firebase
-const firebaseConfig = {
-apiKey: "AIzaSyB7VUtnG-xNVapnAeEZMs2ZIgRh2zSXfLA",
-authDomain: "nk-news-6f73f.firebaseapp.com",
-projectId: "nk-news-6f73f",
-storageBucket: "nk-news-6f73f.firebasestorage.app",
-messagingSenderId: "826756944386",
-appId: "1:826756944386:web:3e4be9e69cd4c5c3cfcd1b",
-measurementId: "G-QCZTHSBWCF"
-};
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const email = document.getElementById("email");
-const password = document.getElementById("password");
-const accountStatus = document.getElementById("accountStatus");
-const logoutBtn = document.getElementById("logoutBtn");
+const newsGrid = document.getElementById("newsGrid");
+const searchInput = document.getElementById("searchInput");
+const publishForm = document.getElementById("publishForm");
+const formMessage = document.getElementById("formMessage");
+const submitButton = document.getElementById("submitButton");
 
-document.getElementById("registerBtn").onclick = async () => {
-try {
-await createUserWithEmailAndPassword(
-auth,email.value,password.value
-);
-alert("تم إنشاء الحساب بنجاح!");
-} catch(e) {
-alert(e.message);
-}
-};
+let currentUser = null;
+let allNews = [];
 
-document.getElementById("loginBtn").onclick = async () => {
-try {
-await signInWithEmailAndPassword(
-auth,email.value,password.value
-);
-alert("تم تسجيل الدخول!");
-} catch(e) {
-alert(e.message);
-}
-};
-
-logoutBtn.onclick = async () => {
-await signOut(auth);
-};
-
-onAuthStateChanged(auth,user => {
-if(user) {
-accountStatus.textContent = "مسجل الدخول: " + user.email;
-logoutBtn.classList.remove("hidden");
-} else {
-accountStatus.textContent = "أنت غير مسجل الدخول";
-logoutBtn.classList.add("hidden");
-}
+document.getElementById("menuButton").addEventListener("click", () => {
+  document.getElementById("navigation").classList.toggle("open");
 });
 
-document.getElementById("publishBtn").onclick = async () => {
-const user = auth.currentUser;
-const title = document.getElementById("newsTitle").value.trim();
-const content = document.getElementById("newsContent").value.trim();
-const status = document.getElementById("publishStatus");
-
-if(!user) {
-status.textContent = "سجل الدخول أولًا.";
-return;
-}
-
-if(!title || !content) {
-status.textContent = "اكتب عنوان الخبر وتفاصيله.";
-return;
-}
-
-try {
-await addDoc(collection(db,"news"),{
-title: title,
-content: content,
-author: user.email,
-uid: user.uid,
-status: "pending",
-createdAt: serverTimestamp()
+document.querySelectorAll("#navigation a").forEach(link => {
+  link.addEventListener("click", () => {
+    document.getElementById("navigation").classList.remove("open");
+  });
 });
 
-status.textContent = "تم إرسال الخبر للمراجعة بنجاح!";
-document.getElementById("newsTitle").value = "";
-document.getElementById("newsContent").value = "";
+onAuthStateChanged(auth, user => {
+  currentUser = user;
 
-} catch(e) {
-status.textContent = "تعذر إرسال الخبر: " + e.message;
-}
-};
+  document.getElementById("loginButton").hidden = !!user;
+  document.getElementById("logoutButton").hidden = !user;
 
-// عرض الأخبار المعتمدة فقط
-const newsQuery = query(
-collection(db,"news"),
-where("status","==","approved"),
-orderBy("createdAt","desc")
-);
-
-onSnapshot(newsQuery, snapshot => {
-const list = document.getElementById("newsList");
-list.innerHTML = "";
-
-if(snapshot.empty) {
-list.textContent = "لا توجد أخبار منشورة حتى الآن.";
-return;
-}
-
-snapshot.forEach(doc => {
-const data = doc.data();
-
-const card = document.createElement("article");
-card.className = "card news";
-
-const title = document.createElement("h3");
-title.textContent = data.title || "";
-
-const content = document.createElement("p");
-content.textContent = data.content || "";
-
-const author = document.createElement("small");
-author.textContent = "الناشر: " + (data.author || "غير معروف");
-
-card.append(title,content,author);
-list.appendChild(card);
+  formMessage.textContent = user
+    ? "أنت مسجل الدخول. يمكنك إرسال خبر للمراجعة."
+    : "يجب تسجيل الدخول قبل إرسال خبر.";
 });
 
-}, error => {
-document.getElementById("newsList").textContent =
-"تعذر تحميل الأخبار: " + error.message;
+document.getElementById("logoutButton").addEventListener("click", async () => {
+  await signOut(auth);
+  location.reload();
 });
+
+function formatDate(timestamp) {
+  if (!timestamp || !timestamp.toDate) return "حديثًا";
+  return timestamp.toDate().toLocaleDateString("ar-EG");
+}
+
+function renderNews(newsItems) {
+  newsGrid.innerHTML = "";
+
+  if (newsItems.length === 0) {
+    newsGrid.innerHTML = '<div class="empty">لا توجد أخبار مطابقة حاليًا.</div>';
+    return;
+  }
+
+  newsItems.forEach(news => {
+    const card = document.createElement("article");
+    card.className = "news-card";
+
+    const art = document.createElement("div");
+    art.className = "news-art";
+    art.textContent = "NK";
+
+    const body = document.createElement("div");
+    body.className = "news-body";
+
+    const meta = document.createElement("div");
+    meta.className = "news-meta";
+    meta.textContent = "🌐 أخبار العالم";
+
+    const title = document.createElement("h3");
+    title.textContent = news.title || "خبر بدون عنوان";
+
+    const content = document.createElement("p");
+    content.textContent = news.content || "";
+
+    const footer = document.createElement("div");
+    footer.className = "news-footer";
+
+    const author = document.createElement("span");
+    author.textContent = "✍️ " + (news.author || "NK News");
+
+    const date = document.createElement("span");
+    date.textContent = formatDate(news.createdAt);
+
+    footer.append(author, date);
+    body.append(meta, title, content, footer);
+    card.append(art, body);
+    newsGrid.appendChild(card);
+  });
+}
+
+function sortNews(items) {
+  return items.sort((a, b) => {
+    const dateA = a.createdAt?.toMillis?.() || 0;
+    const dateB = b.createdAt?.toMillis?.() || 0;
+    return dateB - dateA;
+  });
+}
+
+async function loadNews() {
+  try {
+    const newsQuery = query(
+      collection(db, "news"),
+      where("status", "==", "approved")
+    );
+
+    const snapshot = await getDocs(newsQuery);
+
+    allNews = sortNews(snapshot.docs.map(item => item.data()));
+    renderNews(allNews);
+
+    if (allNews.length > 0) {
+      document.getElementById("tickerText").textContent =
+        "آخر الأخبار: " + (allNews[0].title || "تابع أحدث المستجدات");
+    }
+  } catch (error) {
+    newsGrid.innerHTML =
+      '<div class="empty">تعذر تحميل الأخبار. تحقق من اتصال Firebase وقواعد البيانات.</div>';
+    console.error(error);
+  }
+}
+
+searchInput.addEventListener("input", () => {
+  const term = searchInput.value.trim().toLowerCase();
+
+  const filtered = allNews.filter(news =>
+    (news.title || "").toLowerCase().includes(term) ||
+    (news.content || "").toLowerCase().includes(term)
+  );
+
+  renderNews(filtered);
+});
+
+publishForm.addEventListener("submit", async event => {
+  event.preventDefault();
+
+  if (!currentUser) {
+    formMessage.textContent = "سجّل الدخول أولًا لإرسال الأخبار.";
+    return;
+  }
+
+  const title = document.getElementById("newsTitle").value.trim();
+  const content = document.getElementById("newsContent").value.trim();
+
+  if (!title || !content) {
+    formMessage.textContent = "يرجى كتابة العنوان والتفاصيل.";
+    return;
+  }
+
+  submitButton.disabled = true;
+  submitButton.textContent = "جارٍ الإرسال...";
+
+  try {
+    await addDoc(collection(db, "news"), {
+      title,
+      content,
+      author: currentUser.displayName || currentUser.email || "مستخدم",
+      uid: currentUser.uid,
+      status: "pending",
+      createdAt: serverTimestamp()
+    });
+
+    publishForm.reset();
+    formMessage.textContent = "تم إرسال خبرك بنجاح! سيظهر بعد موافقة المشرف.";
+  } catch (error) {
+    formMessage.textContent = "لم يتم إرسال الخبر: " + error.message;
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = "إرسال الخبر للمراجعة";
+  }
+});
+
+loadNews();
 </script>
-
 </body>
-  </html>
+      </html>
   
