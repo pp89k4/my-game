@@ -2,337 +2,241 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>تسجيل الدخول | NK News</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-<style>
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  font-family: 'Cairo', sans-serif;
-  background: #f1f4f9;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.wrapper { width: 100%; max-width: 430px; }
-
-.brand { text-align: center; margin-bottom: 25px; }
-
-.logo {
-  font-size: 36px;
-  font-weight: 800;
-  color: #142746;
-}
-
-.logo span { color: #2870ec; }
-.brand p { color: #758198; margin: 0; }
-
-.card {
-  background: white;
-  padding: 32px 26px;
-  border-radius: 20px;
-  box-shadow: 0 12px 45px #14274612;
-}
-
-.card h2 {
-  color: #142746;
-  margin: 0 0 5px;
-  font-size: 25px;
-}
-
-.subtitle {
-  color: #8993a5;
-  font-size: 14px;
-  margin-bottom: 25px;
-}
-
-.tabs {
-  display: flex;
-  background: #f0f3f8;
-  padding: 5px;
-  border-radius: 10px;
-  margin-bottom: 22px;
-}
-
-.tabs button {
-  width: 50%;
-  border: 0;
-  padding: 10px;
-  border-radius: 8px;
-  font-family: inherit;
-  cursor: pointer;
-  background: transparent;
-  color: #657188;
-  font-weight: 700;
-}
-
-.tabs button.active {
-  background: white;
-  color: #2463eb;
-  box-shadow: 0 2px 8px #0000000c;
-}
-
-label {
-  display: block;
-  font-size: 14px;
-  color: #35435a;
-  font-weight: 700;
-  margin: 13px 0 6px;
-}
-
-input {
-  width: 100%;
-  padding: 13px;
-  border: 1px solid #e0e5ed;
-  border-radius: 10px;
-  font-family: inherit;
-  outline: none;
-  background: #fafbfd;
-  direction: ltr;
-  text-align: left;
-}
-
-input:focus {
-  border-color: #2870ec;
-  background: white;
-}
-
-.submit {
-  width: 100%;
-  border: 0;
-  padding: 14px;
-  margin-top: 23px;
-  border-radius: 10px;
-  background: #2463eb;
-  color: white;
-  font-family: inherit;
-  font-weight: 800;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.submit:disabled { opacity: .6; cursor: wait; }
-
-#message {
-  font-size: 13px;
-  text-align: center;
-  margin-top: 15px;
-  color: #d13c3c;
-  line-height: 1.9;
-}
-
-.back { text-align: center; margin-top: 20px; }
-
-.back a {
-  text-decoration: none;
-  color: #2463eb;
-  font-size: 14px;
-}
-
-footer {
-  text-align: center;
-  color: #a1aaba;
-  font-size: 12px;
-  margin-top: 25px;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NK News | تسجيل الدخول</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #080e1b;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .container {
+      width: 100%;
+      max-width: 410px;
+      background: #111c30;
+      padding: 28px;
+      border-radius: 18px;
+      border: 1px solid #263754;
+    }
+    h1 { text-align: center; margin: 0 0 8px; }
+    .subtitle { text-align: center; color: #9eacc2; margin-bottom: 25px; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tabs button {
+      flex: 1;
+      background: #202e46;
+      color: white;
+      border: 0;
+      padding: 12px;
+      border-radius: 9px;
+      cursor: pointer;
+    }
+    .tabs button.active { background: #1877f2; }
+    input {
+      width: 100%;
+      padding: 14px;
+      margin: 8px 0;
+      border: 1px solid #34445e;
+      border-radius: 9px;
+      background: #0b1425;
+      color: white;
+      font-size: 15px;
+    }
+    .submit {
+      width: 100%;
+      border: 0;
+      border-radius: 9px;
+      padding: 14px;
+      margin-top: 14px;
+      background: #1877f2;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #message {
+      margin-top: 16px;
+      text-align: center;
+      line-height: 1.7;
+      color: #c8d7ed;
+    }
+    .hidden { display: none; }
+  </style>
 </head>
-
 <body>
-<div class="wrapper">
-
-  <div class="brand">
-    <div class="logo">🌍 NK <span>NEWS</span></div>
-    <p>العالم بين يديك</p>
-  </div>
-
-  <div class="card">
-    <h2 id="heading">مرحبًا بعودتك</h2>
-    <div class="subtitle" id="subtitle">
-      سجّل الدخول لمتابعة أخبار العالم
-    </div>
+  <main class="container">
+    <h1>NK News</h1>
+    <p class="subtitle">صوت العالم في مكان واحد</p>
 
     <div class="tabs">
-      <button class="active" id="loginTab" type="button">تسجيل الدخول</button>
+      <button id="loginTab" class="active" type="button">تسجيل الدخول</button>
       <button id="registerTab" type="button">إنشاء حساب</button>
     </div>
 
     <form id="authForm">
-      <label for="email">البريد الإلكتروني</label>
-      <input id="email" type="email"
-        placeholder="example@email.com" required>
-
-      <label for="password">كلمة المرور</label>
-      <input id="password" type="password"
-        placeholder="كلمة المرور" minlength="6" required>
-
-      <button class="submit" id="submitBtn" type="submit">
-        تسجيل الدخول
-      </button>
+      <input id="name" class="hidden" type="text"
+        placeholder="اسم المستخدم" maxlength="40">
+      <input id="email" type="email" placeholder="البريد الإلكتروني" required>
+      <input id="password" type="password" placeholder="كلمة المرور"
+        minlength="6" required>
+      <button class="submit" id="submitBtn" type="submit">تسجيل الدخول</button>
     </form>
 
-    <div id="message"></div>
-  </div>
+    <div id="message" role="status"></div>
+  </main>
 
-  <div class="back">
-    <a href="index.html">← العودة إلى الصفحة الرئيسية</a>
-  </div>
+  <script type="module">
+    import { initializeApp } from
+      "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 
-  <footer>© 2026 NK News · جميع الحقوق محفوظة</footer>
-</div>
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      sendEmailVerification,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 
-<script type="module">
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { firebaseConfig } from "./firebase-config.js";
 
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  sendEmailVerification,
-  signOut,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-import { firebaseConfig }
-from "./firebase-config.js";
+    const form = document.getElementById("authForm");
+    const nameInput = document.getElementById("name");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const submitBtn = document.getElementById("submitBtn");
+    const message = document.getElementById("message");
+    const loginTab = document.getElementById("loginTab");
+    const registerTab = document.getElementById("registerTab");
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+    let mode = "login";
 
-let mode = "login";
-let handlingAuth = false;
+    function showMessage(text, color = "#c8d7ed") {
+      message.textContent = text;
+      message.style.color = color;
+    }
 
-const loginTab = document.getElementById("loginTab");
-const registerTab = document.getElementById("registerTab");
-const heading = document.getElementById("heading");
-const subtitle = document.getElementById("subtitle");
-const submitBtn = document.getElementById("submitBtn");
-const message = document.getElementById("message");
+    function setMode(newMode) {
+      mode = newMode;
+      const registering = mode === "register";
 
-function showMessage(text, color = "#d13c3c") {
-  message.style.color = color;
-  message.textContent = text;
-}
+      nameInput.classList.toggle("hidden", !registering);
+      nameInput.required = registering;
+      loginTab.classList.toggle("active", !registering);
+      registerTab.classList.toggle("active", registering);
+      submitBtn.textContent = registering ? "إنشاء حساب" : "تسجيل الدخول";
+      showMessage("");
+    }
 
-function setMode(newMode) {
-  mode = newMode;
-  message.textContent = "";
+    loginTab.addEventListener("click", () => setMode("login"));
+    registerTab.addEventListener("click", () => setMode("register"));
 
-  loginTab.classList.toggle("active", mode === "login");
-  registerTab.classList.toggle("active", mode === "register");
+    async function createUserProfile(user, displayName) {
+      const profileRef = doc(db, "users", user.uid);
+      const profileSnap = await getDoc(profileRef);
 
-  if (mode === "login") {
-    heading.textContent = "مرحبًا بعودتك";
-    subtitle.textContent = "سجّل الدخول لمتابعة أخبار العالم";
-    submitBtn.textContent = "تسجيل الدخول";
-  } else {
-    heading.textContent = "انضم إلى NK News";
-    subtitle.textContent = "أنشئ حسابك وشارك الأخبار";
-    submitBtn.textContent = "إنشاء حساب";
-  }
-}
-
-loginTab.onclick = () => setMode("login");
-registerTab.onclick = () => setMode("register");
-
-onAuthStateChanged(auth, async user => {
-  if (!user || handlingAuth) return;
-
-  if (user.emailVerified) {
-    window.location.href = "index.html";
-    return;
-  }
-
-  handlingAuth = true;
-  await signOut(auth);
-  showMessage(
-    "بريدك الإلكتروني غير مؤكد. افتح رسالة التحقق التي وصلتك ثم سجّل الدخول.",
-    "#d18b18"
-  );
-  handlingAuth = false;
-});
-
-document.getElementById("authForm").onsubmit = async (e) => {
-  e.preventDefault();
-
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-
-  submitBtn.disabled = true;
-  showMessage("جارٍ تنفيذ طلبك...", "#1769e0");
-
-  try {
-
-    if (mode === "register") {
-
-      const result = await createUserWithEmailAndPassword(
-        auth, email, password
-      );
-
-      await sendEmailVerification(result.user);
-      await signOut(auth);
-
-      showMessage(
-        "تم إنشاء حسابك! 📩 أرسلنا رابط التحقق إلى بريدك الإلكتروني. افتح الرسالة واضغط على الرابط، ثم سجّل الدخول.",
-        "green"
-      );
-
-    } else {
-
-      const result = await signInWithEmailAndPassword(
-        auth, email, password
-      );
-
-      if (!result.user.emailVerified) {
-
-        await sendEmailVerification(result.user);
-        await signOut(auth);
-
-        showMessage(
-          "بريدك غير مؤكد بعد. أرسلنا لك رابط تحقق جديدًا. افتح بريدك واضغط عليه ثم سجّل الدخول.",
-          "#d18b18"
-        );
-
-      } else {
-
-        showMessage("تم التحقق بنجاح! جارٍ تحويلك...", "green");
-        window.location.href = "index.html";
-
+      // لا نعيد إنشاء الملف إذا كان موجودًا، حتى لا نمسح حالة التوثيق.
+      if (!profileSnap.exists()) {
+        await setDoc(profileRef, {
+          uid: user.uid,
+          displayName: displayName || user.displayName || "مستخدم",
+          email: user.email,
+          verified: false,
+          createdAt: serverTimestamp()
+        });
       }
     }
 
-  } catch (error) {
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
 
-    const errors = {
-      "auth/email-already-in-use": "هذا البريد مسجل بالفعل.",
-      "auth/invalid-email": "البريد الإلكتروني غير صحيح.",
-      "auth/invalid-credential": "البريد أو كلمة المرور غير صحيحة.",
-      "auth/weak-password": "كلمة المرور ضعيفة.",
-      "auth/network-request-failed": "تحقق من اتصال الإنترنت.",
-      "auth/too-many-requests": "محاولات كثيرة، حاول لاحقًا.",
-      "auth/too-many-requests": "محاولات كثيرة، حاول لاحقًا."
-    };
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      const displayName = nameInput.value.trim();
 
-    showMessage(
-      errors[error.code] || "حدث خطأ: " + error.message
-    );
+      submitBtn.disabled = true;
+      showMessage("يرجى الانتظار...");
 
-  } finally {
-    submitBtn.disabled = false;
-  }
-};
+      try {
+        if (mode === "register") {
+          if (!displayName) {
+            throw new Error("اكتب اسم المستخدم.");
+          }
 
-</script>
+          const result = await createUserWithEmailAndPassword(
+            auth, email, password
+          );
+
+          await createUserProfile(result.user, displayName);
+          await sendEmailVerification(result.user);
+          await signOut(auth);
+
+          showMessage(
+            "تم إنشاء حسابك! افتح بريدك الإلكتروني واضغط رابط التحقق، ثم سجّل الدخول.",
+            "#54d69a"
+          );
+        } else {
+          const result = await signInWithEmailAndPassword(
+            auth, email, password
+          );
+
+          if (!result.user.emailVerified) {
+            await sendEmailVerification(result.user);
+            await signOut(auth);
+
+            showMessage(
+              "بريدك غير مؤكد. أرسلنا لك رابط تحقق جديدًا.",
+              "#ffcc66"
+            );
+            return;
+          }
+
+          await createUserProfile(result.user, result.user.displayName);
+          window.location.href = "index.html";
+        }
+      } catch (error) {
+        const errors = {
+          "auth/email-already-in-use": "هذا البريد مسجل بالفعل.",
+          "auth/invalid-email": "البريد الإلكتروني غير صحيح.",
+          "auth/weak-password": "كلمة المرور ضعيفة؛ استخدم 6 أحرف على الأقل.",
+          "auth/invalid-credential": "البريد أو كلمة المرور غير صحيحة.",
+          "auth/too-many-requests": "محاولات كثيرة. حاول لاحقًا.",
+          "permission-denied": "تعذر إنشاء ملف المستخدم. راجع قواعد Firestore."
+        };
+
+        showMessage(
+          errors[error.code] || error.message || "حدث خطأ، حاول مرة أخرى.",
+          "#ff7777"
+        );
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user && user.emailVerified) {
+        window.location.href = "index.html";
+      }
+    });
+  </script>
 </body>
-      </html>
+  </html>
   
