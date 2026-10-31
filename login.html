@@ -4,96 +4,162 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NK News | تسجيل الدخول</title>
+  <title>تسجيل الدخول | NK News</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+
   <style>
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       min-height: 100vh;
-      display: grid;
-      place-items: center;
-      background: #080e1b;
-      color: white;
-      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       padding: 20px;
+      font-family: Cairo, Arial, sans-serif;
+      background: #101f3d;
+      color: #17243a;
     }
+
     .container {
       width: 100%;
-      max-width: 410px;
-      background: #111c30;
+      max-width: 430px;
+      background: white;
+      border-radius: 20px;
       padding: 28px;
-      border-radius: 18px;
-      border: 1px solid #263754;
+      box-shadow: 0 15px 50px #0003;
     }
-    h1 { text-align: center; margin: 0 0 8px; }
-    .subtitle { text-align: center; color: #9eacc2; margin-bottom: 25px; }
-    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+
+    h1 {
+      text-align: center;
+      color: #1765c1;
+      margin: 0 0 5px;
+      font-size: 30px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #738097;
+      margin: 0 0 25px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
     .tabs button {
       flex: 1;
-      background: #202e46;
-      color: white;
+      padding: 11px;
       border: 0;
-      padding: 12px;
       border-radius: 9px;
+      background: #edf2f8;
+      color: #17243a;
+      font-family: inherit;
+      font-weight: 700;
       cursor: pointer;
     }
-    .tabs button.active { background: #1877f2; }
+
+    .tabs button.active {
+      background: #1765c1;
+      color: white;
+    }
+
     input {
       width: 100%;
-      padding: 14px;
-      margin: 8px 0;
-      border: 1px solid #34445e;
+      padding: 13px;
+      margin-bottom: 13px;
+      border: 1px solid #dce3ed;
       border-radius: 9px;
-      background: #0b1425;
-      color: white;
+      font-family: inherit;
       font-size: 15px;
+      outline: none;
     }
-    .submit {
+
+    input:focus { border-color: #1765c1; }
+
+    .main-button {
       width: 100%;
+      padding: 13px;
+      background: #1765c1;
+      color: white;
       border: 0;
       border-radius: 9px;
-      padding: 14px;
-      margin-top: 14px;
-      background: #1877f2;
-      color: white;
+      font-family: inherit;
+      font-weight: 800;
       font-size: 16px;
-      font-weight: bold;
       cursor: pointer;
     }
+
+    .main-button:disabled {
+      opacity: .6;
+      cursor: wait;
+    }
+
     #message {
       margin-top: 16px;
       text-align: center;
-      line-height: 1.7;
-      color: #c8d7ed;
+      font-size: 14px;
+      line-height: 1.8;
+      color: #53647d;
     }
+
     .hidden { display: none; }
   </style>
 </head>
+
 <body>
-  <main class="container">
+  <div class="container">
     <h1>NK News</h1>
-    <p class="subtitle">صوت العالم في مكان واحد</p>
+    <p class="subtitle">مرحبًا بك في مجتمع الأخبار</p>
 
     <div class="tabs">
-      <button id="loginTab" class="active" type="button">تسجيل الدخول</button>
-      <button id="registerTab" type="button">إنشاء حساب</button>
+      <button id="loginTab" class="active">تسجيل الدخول</button>
+      <button id="registerTab">إنشاء حساب</button>
     </div>
 
     <form id="authForm">
-      <input id="name" class="hidden" type="text"
-        placeholder="اسم المستخدم" maxlength="40">
-      <input id="email" type="email" placeholder="البريد الإلكتروني" required>
-      <input id="password" type="password" placeholder="كلمة المرور"
-        minlength="6" required>
-      <button class="submit" id="submitBtn" type="submit">تسجيل الدخول</button>
+      <input
+        id="name"
+        type="text"
+        placeholder="الاسم"
+        class="hidden"
+        autocomplete="name"
+      >
+
+      <input
+        id="email"
+        type="email"
+        placeholder="البريد الإلكتروني"
+        required
+        autocomplete="email"
+      >
+
+      <input
+        id="password"
+        type="password"
+        placeholder="كلمة المرور"
+        required
+        minlength="6"
+        autocomplete="current-password"
+      >
+
+      <button class="main-button" id="submitButton" type="submit">
+        تسجيل الدخول
+      </button>
     </form>
 
-    <div id="message" role="status"></div>
-  </main>
+    <div id="message"></div>
+  </div>
 
   <script type="module">
-    import { initializeApp } from
-      "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { firebaseConfig } from "./firebase-config.js";
+
+    import {
+      initializeApp
+    } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 
     import {
       getAuth,
@@ -112,8 +178,6 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-    import { firebaseConfig } from "./firebase-config.js";
-
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
@@ -122,121 +186,177 @@
     const nameInput = document.getElementById("name");
     const emailInput = document.getElementById("email");
     const passwordInput = document.getElementById("password");
-    const submitBtn = document.getElementById("submitBtn");
+    const submitButton = document.getElementById("submitButton");
     const message = document.getElementById("message");
+
     const loginTab = document.getElementById("loginTab");
     const registerTab = document.getElementById("registerTab");
 
     let mode = "login";
+    let checkingAuth = true;
 
-    function showMessage(text, color = "#c8d7ed") {
+    function showMessage(text, color = "#53647d") {
       message.textContent = text;
       message.style.color = color;
     }
 
     function setMode(newMode) {
       mode = newMode;
+
       const registering = mode === "register";
 
       nameInput.classList.toggle("hidden", !registering);
       nameInput.required = registering;
+
       loginTab.classList.toggle("active", !registering);
       registerTab.classList.toggle("active", registering);
-      submitBtn.textContent = registering ? "إنشاء حساب" : "تسجيل الدخول";
+
+      submitButton.textContent = registering
+        ? "إنشاء الحساب"
+        : "تسجيل الدخول";
+
+      passwordInput.autocomplete = registering
+        ? "new-password"
+        : "current-password";
+
       showMessage("");
     }
 
     loginTab.addEventListener("click", () => setMode("login"));
     registerTab.addEventListener("click", () => setMode("register"));
 
+    // إنشاء الملفات عند تسجيل الدخول ببريد موثّق
     async function createUserProfile(user, displayName) {
-      const profileRef = doc(db, "users", user.uid);
-      const profileSnap = await getDoc(profileRef);
+      const userRef = doc(db, "users", user.uid);
+      const publicRef = doc(db, "publicProfiles", user.uid);
 
-      // لا نعيد إنشاء الملف إذا كان موجودًا، حتى لا نمسح حالة التوثيق.
-      if (!profileSnap.exists()) {
-        await setDoc(profileRef, {
+      const [userSnapshot, publicSnapshot] = await Promise.all([
+        getDoc(userRef),
+        getDoc(publicRef)
+      ]);
+
+      let savedName = displayName || user.displayName || "مستخدم";
+
+      if (!userSnapshot.exists()) {
+        await setDoc(userRef, {
           uid: user.uid,
-          displayName: displayName || user.displayName || "مستخدم",
+          displayName: savedName,
           email: user.email,
           verified: false,
           createdAt: serverTimestamp()
         });
+      } else {
+        const oldData = userSnapshot.data();
+        savedName = oldData.displayName || savedName;
+      }
+
+      if (!publicSnapshot.exists()) {
+        await setDoc(publicRef, {
+          uid: user.uid,
+          displayName: savedName,
+          verified: false
+        });
       }
     }
 
-    form.addEventListener("submit", async (event) => {
+    form.addEventListener("submit", async event => {
       event.preventDefault();
 
       const email = emailInput.value.trim();
       const password = passwordInput.value;
       const displayName = nameInput.value.trim();
 
-      submitBtn.disabled = true;
-      showMessage("يرجى الانتظار...");
+      if (mode === "register" && !displayName) {
+        showMessage("اكتب اسمك أولًا.", "#d94343");
+        return;
+      }
+
+      submitButton.disabled = true;
+      showMessage("جارٍ تنفيذ العملية...");
 
       try {
         if (mode === "register") {
-          if (!displayName) {
-            throw new Error("اكتب اسم المستخدم.");
-          }
-
           const result = await createUserWithEmailAndPassword(
-            auth, email, password
+            auth,
+            email,
+            password
           );
 
-          await createUserProfile(result.user, displayName);
-          await sendEmailVerification(result.user);
+          if (auth.currentUser) {
+            await sendEmailVerification(auth.currentUser);
+          }
+
           await signOut(auth);
 
           showMessage(
-            "تم إنشاء حسابك! افتح بريدك الإلكتروني واضغط رابط التحقق، ثم سجّل الدخول.",
-            "#54d69a"
-          );
-        } else {
-          const result = await signInWithEmailAndPassword(
-            auth, email, password
+            "تم إنشاء حسابك! أرسلنا رابط التحقق إلى بريدك الإلكتروني. افتح الرابط ثم سجّل الدخول.",
+            "#168653"
           );
 
-          if (!result.user.emailVerified) {
-            await sendEmailVerification(result.user);
+          form.reset();
+          setMode("login");
+
+        } else {
+          const result = await signInWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
+
+          const user = result.user;
+
+          await user.reload();
+
+          if (!user.emailVerified) {
+            await sendEmailVerification(user);
             await signOut(auth);
 
             showMessage(
-              "بريدك غير مؤكد. أرسلنا لك رابط تحقق جديدًا.",
-              "#ffcc66"
+              "يجب تأكيد بريدك الإلكتروني أولًا. أرسلنا لك رابط التحقق مرة أخرى.",
+              "#d18b16"
             );
+
             return;
           }
 
-          await createUserProfile(result.user, result.user.displayName);
-          window.location.href = "index.html";
+          await createUserProfile(user);
+
+          showMessage("تم تسجيل الدخول بنجاح!", "#168653");
+
+          location.href = "index.html";
         }
+
       } catch (error) {
+        console.error(error);
+
         const errors = {
           "auth/email-already-in-use": "هذا البريد مسجل بالفعل.",
           "auth/invalid-email": "البريد الإلكتروني غير صحيح.",
-          "auth/weak-password": "كلمة المرور ضعيفة؛ استخدم 6 أحرف على الأقل.",
+          "auth/weak-password": "كلمة المرور ضعيفة.",
           "auth/invalid-credential": "البريد أو كلمة المرور غير صحيحة.",
-          "auth/too-many-requests": "محاولات كثيرة. حاول لاحقًا.",
-          "permission-denied": "تعذر إنشاء ملف المستخدم. راجع قواعد Firestore."
+          "auth/network-request-failed": "تحقق من اتصال الإنترنت."
         };
 
         showMessage(
-          errors[error.code] || error.message || "حدث خطأ، حاول مرة أخرى.",
-          "#ff7777"
+          errors[error.code] || "حدث خطأ: " + error.message,
+          "#d94343"
         );
+
       } finally {
-        submitBtn.disabled = false;
+        submitButton.disabled = false;
       }
     });
 
-    onAuthStateChanged(auth, async (user) => {
-      if (user && user.emailVerified) {
-        window.location.href = "index.html";
+    onAuthStateChanged(auth, async user => {
+      if (checkingAuth) {
+        checkingAuth = false;
+
+        if (user && user.emailVerified) {
+          location.href = "index.html";
+        }
       }
     });
   </script>
 </body>
-  </html>
-  
+                                                         </html>
+        
