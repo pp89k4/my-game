@@ -78,7 +78,12 @@
       font-weight: bold;
       margin-right: 5px;
     }
-    .user-email { color: #738097; font-size: 13px; direction: ltr; text-align: right; }
+    .user-email {
+      color: #738097;
+      font-size: 13px;
+      direction: ltr;
+      text-align: right;
+    }
     h2 { margin-top: 30px; }
     @media(max-width: 500px) {
       .stats { grid-template-columns: 1fr 1fr; }
@@ -112,8 +117,8 @@
     <section id="newsList"></section>
 
     <h2>إدارة التوثيق الأزرق</h2>
-    <p>يمكن للمشرف منح علامة التوثيق أو سحبها من المستخدمين.</p>
-    <div id="usersMessage">بانتظار التحقق من الصلاحيات...</div>
+    <p>المشرف وحده يستطيع منح التوثيق أو سحبه.</p>
+    <div id="usersMessage">بانتظار التحقق...</div>
     <section id="usersList"></section>
   </main>
 
@@ -146,8 +151,11 @@
 
     function safeText(value) {
       return String(value ?? "").replace(/[&<>"']/g, char => ({
-        "&": "&amp;", "<": "&lt;", ">": "&gt;",
-        '"': "&quot;", "'": "&#039;"
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
       })[char]);
     }
 
@@ -180,11 +188,14 @@
 
         isAdmin = true;
         await Promise.all([loadNews(), loadUsers()]);
+
       } catch (error) {
-        message.textContent = "تعذر التحقق من الصلاحيات: " + error.message;
+        message.textContent =
+          "تعذر التحقق من الصلاحيات: " + error.message;
       }
     });
 
+    // تحميل الأخبار
     async function loadNews() {
       if (!isAdmin) return;
 
@@ -236,11 +247,14 @@
 
           newsList.appendChild(card);
         });
+
       } catch (error) {
-        message.textContent = "حدث خطأ أثناء تحميل الأخبار: " + error.message;
+        message.textContent =
+          "حدث خطأ أثناء تحميل الأخبار: " + error.message;
       }
     }
 
+    // تحميل المستخدمين
     async function loadUsers() {
       if (!isAdmin) return;
 
@@ -251,20 +265,13 @@
         const snapshot = await getDocs(collection(db, "users"));
 
         if (snapshot.empty) {
-          usersMessage.textContent =
-            "لا يوجد مستخدمون بعد. ستظهر الحسابات التي أنشأت ملفاتها في الموقع هنا.";
+          usersMessage.textContent = "لا يوجد مستخدمون حتى الآن.";
           return;
         }
 
         usersMessage.textContent = `عدد المستخدمين: ${snapshot.size}`;
 
-        const users = snapshot.docs.sort((a, b) => {
-          const nameA = a.data().displayName || "";
-          const nameB = b.data().displayName || "";
-          return nameA.localeCompare(nameB);
-        });
-
-        users.forEach(item => {
+        snapshot.forEach(item => {
           const user = item.data();
           const verified = user.verified === true;
 
@@ -276,8 +283,13 @@
               ${safeText(user.displayName || "مستخدم")}
               ${verified ? badge() : ""}
             </h3>
-            <div class="user-email">${safeText(user.email || "لا يوجد بريد")}</div>
-            <p>${verified ? "الحساب موثّق" : "الحساب غير موثّق"}</p>
+
+            <div class="user-email">
+              ${safeText(user.email || "لا يوجد بريد")}
+            </div>
+
+            <p>${verified ? "الحساب موثّق ✓" : "الحساب غير موثّق"}</p>
+
             ${
               verified
                 ? `<button class="unverify" data-user-action="remove" data-id="${safeText(item.id)}">إزالة التوثيق</button>`
@@ -287,12 +299,14 @@
 
           usersList.appendChild(card);
         });
+
       } catch (error) {
         usersMessage.textContent =
           "تعذر تحميل المستخدمين: " + error.message;
       }
     }
 
+    // قبول ورفض وحذف الأخبار
     newsList.addEventListener("click", async event => {
       const button = event.target.closest("button[data-action]");
       if (!button || !isAdmin) return;
@@ -308,7 +322,9 @@
             button.disabled = false;
             return;
           }
+
           await deleteDoc(doc(db, "news", id));
+
         } else {
           const newStatus =
             action === "approve" ? "approved" : "rejected";
@@ -319,20 +335,78 @@
         }
 
         await loadNews();
+
       } catch (error) {
         alert("لم تنجح العملية: " + error.message);
         button.disabled = false;
       }
     });
 
+    // منح أو إزالة التوثيق من الملفين
     usersList.addEventListener("click", async event => {
       const button = event.target.closest("button[data-user-action]");
       if (!button || !isAdmin) return;
 
-      const id = button.dataset.id;
+      const uid = button.dataset.id;
       const action = button.dataset.userAction;
+      const newStatus = action === "verify";
 
-      const confirmText = action === "verify"
+      const question = newStatus
+        ? "هل تريد منح هذا المستخدم علامة التوثيق الزرقاء؟"
+        : "هل تريد إزالة علامة التوثيق من هذا المستخدم؟";
+
+      if (!confirm(question)) return;
+
+      button.disabled = true;
+
+      try {
+        const privateRef = doc(db, "users", uid);
+        const publicRef = doc(db, "publicProfiles", uid);
+
+        const publicSnapshot = await getDoc(publicRef);
+
+        if (!publicSnapshot.exists()) {
+          throw new Error(
+            "الملف العام غير موجود. اطلب من المستخدم تسجيل الدخول إلى حسابه أولًا."
+          );
+        }
+
+        // تحديث الملف الخاص والعام معًا
+        await Promise.all([
+          updateDoc(privateRef, {
+            verified: newStatus
+          }),
+
+          updateDoc(publicRef, {
+            verified: newStatus
+          })
+        ]);
+
+        await loadUsers();
+
+        alert(
+          newStatus
+            ? "تم منح علامة التوثيق بنجاح!"
+            : "تمت إزالة علامة التوثيق بنجاح."
+        );
+
+      } catch (error) {
+        alert("تعذر تعديل التوثيق: " + error.message);
+        button.disabled = false;
+      }
+    });
+
+    document.getElementById("refresh").onclick = loadNews;
+    document.getElementById("refreshUsers").onclick = loadUsers;
+
+    document.getElementById("logout").onclick = async () => {
+      await signOut(auth);
+      location.href = "login.html";
+    };
+  </script>
+</body>
+  </html>
+  const confirmText = action === "verify"
         ? "هل تريد منح هذا المستخدم علامة التوثيق الزرقاء؟"
         : "هل تريد إزالة علامة التوثيق من هذا المستخدم؟";
 
