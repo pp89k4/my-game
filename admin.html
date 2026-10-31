@@ -28,27 +28,58 @@
       gap: 15px;
       margin-bottom: 22px;
     }
-    .stat, .news-card {
+    .stat, .news-card, .user-card {
       background: white;
       border-radius: 14px;
       padding: 18px;
       box-shadow: 0 4px 18px #14284a0d;
     }
-    .stat strong { display: block; font-size: 28px; color: #1765c1; }
-    .news-card { margin-bottom: 15px; }
+    .stat strong {
+      display: block;
+      font-size: 28px;
+      color: #1765c1;
+    }
+    .news-card, .user-card { margin-bottom: 15px; }
     .news-card h3 { margin-top: 0; }
     .news-card p { line-height: 1.9; white-space: pre-wrap; }
     .author { color: #738097; font-size: 13px; }
     button {
-      border: 0; border-radius: 9px; padding: 10px 17px;
-      font-family: inherit; font-weight: 700; cursor: pointer;
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 17px;
+      font-family: inherit;
+      font-weight: 700;
+      cursor: pointer;
       margin: 5px 3px;
     }
+    button:disabled { opacity: .6; cursor: wait; }
     .approve { background: #168653; color: white; }
     .reject { background: #e5a12b; color: #17243a; }
     .delete { background: #d94343; color: white; }
     .refresh { background: #1765c1; color: white; }
-    #message { padding: 12px 0; color: #53647d; }
+    .verify { background: #1877f2; color: white; }
+    .unverify { background: #e5a12b; color: #17243a; }
+    #message, #usersMessage {
+      padding: 12px 0;
+      color: #53647d;
+    }
+    .verified-badge {
+      display: inline-flex;
+      vertical-align: middle;
+      align-items: center;
+      justify-content: center;
+      width: 19px;
+      height: 19px;
+      border-radius: 50%;
+      background: #1877f2;
+      color: white;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      font-weight: bold;
+      margin-right: 5px;
+    }
+    .user-email { color: #738097; font-size: 13px; direction: ltr; text-align: right; }
+    h2 { margin-top: 30px; }
     @media(max-width: 500px) {
       .stats { grid-template-columns: 1fr 1fr; }
     }
@@ -57,7 +88,7 @@
 <body>
   <header>
     <h1>NK News | لوحة المشرفين</h1>
-    <p>إدارة الأخبار ومراجعة المشاركات</p>
+    <p>إدارة الأخبار والمستخدمين والتوثيق</p>
   </header>
 
   <main>
@@ -67,24 +98,36 @@
         أخبار تنتظر المراجعة
       </div>
       <div class="stat">
-        <strong id="approvedCount">—</strong>
+        <strong id="approvedCount">0</strong>
         الأخبار المنشورة
       </div>
     </div>
 
     <button class="refresh" id="refresh">تحديث الأخبار</button>
+    <button class="refresh" id="refreshUsers">تحديث المستخدمين</button>
     <button class="delete" id="logout">تسجيل الخروج</button>
+
     <h2>الأخبار المعلّقة</h2>
     <div id="message">جارٍ التحقق من صلاحيات المشرف...</div>
     <section id="newsList"></section>
+
+    <h2>إدارة التوثيق الأزرق</h2>
+    <p>يمكن للمشرف منح علامة التوثيق أو سحبها من المستخدمين.</p>
+    <div id="usersMessage">بانتظار التحقق من الصلاحيات...</div>
+    <section id="usersList"></section>
   </main>
 
   <script type="module">
     import { firebaseConfig } from "./firebase-config.js";
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+
+    import {
+      initializeApp
+    } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+
     import {
       getAuth, onAuthStateChanged, signOut
     } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+
     import {
       getFirestore, doc, getDoc, collection, getDocs,
       query, where, updateDoc, deleteDoc
@@ -96,6 +139,9 @@
 
     const message = document.getElementById("message");
     const newsList = document.getElementById("newsList");
+    const usersList = document.getElementById("usersList");
+    const usersMessage = document.getElementById("usersMessage");
+
     let isAdmin = false;
 
     function safeText(value) {
@@ -105,8 +151,20 @@
       })[char]);
     }
 
+    function badge() {
+      return `<span class="verified-badge" title="حساب موثّق">✓</span>`;
+    }
+
     onAuthStateChanged(auth, async user => {
+      isAdmin = false;
+
       if (!user) {
+        location.href = "login.html";
+        return;
+      }
+
+      if (!user.emailVerified) {
+        await signOut(auth);
         location.href = "login.html";
         return;
       }
@@ -116,11 +174,12 @@
 
         if (!adminDoc.exists()) {
           message.textContent = "ليس لديك صلاحية دخول لوحة المشرفين.";
+          usersMessage.textContent = "ليس لديك صلاحية.";
           return;
         }
 
         isAdmin = true;
-        await loadNews();
+        await Promise.all([loadNews(), loadUsers()]);
       } catch (error) {
         message.textContent = "تعذر التحقق من الصلاحيات: " + error.message;
       }
@@ -137,6 +196,7 @@
           collection(db, "news"),
           where("status", "==", "pending")
         );
+
         const approvedQuery = query(
           collection(db, "news"),
           where("status", "==", "approved")
@@ -149,6 +209,7 @@
 
         document.getElementById("pendingCount").textContent =
           pendingSnapshot.size;
+
         document.getElementById("approvedCount").textContent =
           approvedSnapshot.size;
 
@@ -163,18 +224,72 @@
           const news = item.data();
           const card = document.createElement("article");
           card.className = "news-card";
+
           card.innerHTML = `
             <h3>${safeText(news.title)}</h3>
             <p>${safeText(news.content)}</p>
             <div class="author">الكاتب: ${safeText(news.author)}</div>
-            <button class="approve" data-action="approve" data-id="${item.id}">قبول ونشر</button>
-            <button class="reject" data-action="reject" data-id="${item.id}">رفض</button>
-            <button class="delete" data-action="delete" data-id="${item.id}">حذف</button>
+            <button class="approve" data-action="approve" data-id="${safeText(item.id)}">قبول ونشر</button>
+            <button class="reject" data-action="reject" data-id="${safeText(item.id)}">رفض</button>
+            <button class="delete" data-action="delete" data-id="${safeText(item.id)}">حذف</button>
           `;
+
           newsList.appendChild(card);
         });
       } catch (error) {
         message.textContent = "حدث خطأ أثناء تحميل الأخبار: " + error.message;
+      }
+    }
+
+    async function loadUsers() {
+      if (!isAdmin) return;
+
+      usersMessage.textContent = "جارٍ تحميل المستخدمين...";
+      usersList.innerHTML = "";
+
+      try {
+        const snapshot = await getDocs(collection(db, "users"));
+
+        if (snapshot.empty) {
+          usersMessage.textContent =
+            "لا يوجد مستخدمون بعد. ستظهر الحسابات التي أنشأت ملفاتها في الموقع هنا.";
+          return;
+        }
+
+        usersMessage.textContent = `عدد المستخدمين: ${snapshot.size}`;
+
+        const users = snapshot.docs.sort((a, b) => {
+          const nameA = a.data().displayName || "";
+          const nameB = b.data().displayName || "";
+          return nameA.localeCompare(nameB);
+        });
+
+        users.forEach(item => {
+          const user = item.data();
+          const verified = user.verified === true;
+
+          const card = document.createElement("article");
+          card.className = "user-card";
+
+          card.innerHTML = `
+            <h3>
+              ${safeText(user.displayName || "مستخدم")}
+              ${verified ? badge() : ""}
+            </h3>
+            <div class="user-email">${safeText(user.email || "لا يوجد بريد")}</div>
+            <p>${verified ? "الحساب موثّق" : "الحساب غير موثّق"}</p>
+            ${
+              verified
+                ? `<button class="unverify" data-user-action="remove" data-id="${safeText(item.id)}">إزالة التوثيق</button>`
+                : `<button class="verify" data-user-action="verify" data-id="${safeText(item.id)}">منح التوثيق ✓</button>`
+            }
+          `;
+
+          usersList.appendChild(card);
+        });
+      } catch (error) {
+        usersMessage.textContent =
+          "تعذر تحميل المستخدمين: " + error.message;
       }
     }
 
@@ -186,26 +301,64 @@
       const action = button.dataset.action;
 
       try {
+        button.disabled = true;
+
         if (action === "delete") {
-          if (!confirm("هل تريد حذف هذا الخبر نهائيًا؟")) return;
+          if (!confirm("هل تريد حذف هذا الخبر نهائيًا؟")) {
+            button.disabled = false;
+            return;
+          }
           await deleteDoc(doc(db, "news", id));
         } else {
-          const newStatus = action === "approve" ? "approved" : "rejected";
-          await updateDoc(doc(db, "news", id), { status: newStatus });
+          const newStatus =
+            action === "approve" ? "approved" : "rejected";
+
+          await updateDoc(doc(db, "news", id), {
+            status: newStatus
+          });
         }
 
         await loadNews();
       } catch (error) {
         alert("لم تنجح العملية: " + error.message);
+        button.disabled = false;
+      }
+    });
+
+    usersList.addEventListener("click", async event => {
+      const button = event.target.closest("button[data-user-action]");
+      if (!button || !isAdmin) return;
+
+      const id = button.dataset.id;
+      const action = button.dataset.userAction;
+
+      const confirmText = action === "verify"
+        ? "هل تريد منح هذا المستخدم علامة التوثيق الزرقاء؟"
+        : "هل تريد إزالة علامة التوثيق من هذا المستخدم؟";
+
+      if (!confirm(confirmText)) return;
+
+      try {
+        button.disabled = true;
+
+        await updateDoc(doc(db, "users", id), {
+          verified: action === "verify"
+        });
+
+        await loadUsers();
+      } catch (error) {
+        alert("تعذر تعديل التوثيق: " + error.message);
+        button.disabled = false;
       }
     });
 
     document.getElementById("refresh").onclick = loadNews;
+    document.getElementById("refreshUsers").onclick = loadUsers;
+
     document.getElementById("logout").onclick = async () => {
       await signOut(auth);
       location.href = "login.html";
     };
   </script>
 </body>
-      </html>
-  
+</html>
