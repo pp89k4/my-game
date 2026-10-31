@@ -214,7 +214,28 @@ nav a:hover {color:#61a7ff}
   border-top:1px solid #edf1f6;
   padding-top:11px;
   display:flex;justify-content:space-between;
+  gap:8px;
   font-size:10px;color:#7b8ba1;
+}
+.author-info {
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  min-width:0;
+}
+.verified-badge {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:17px;
+  height:17px;
+  flex-shrink:0;
+  border-radius:50%;
+  background:#1877f2;
+  color:white;
+  font-family:Arial,sans-serif;
+  font-size:12px;
+  font-weight:900;
 }
 .empty {
   grid-column:1/-1;
@@ -249,6 +270,7 @@ nav a:hover {color:#61a7ff}
 .field input:focus,.field textarea:focus {border-color:var(--blue)}
 .field textarea {min-height:115px;resize:vertical}
 .publish-form button {width:100%;padding:12px}
+.publish-form button:disabled {opacity:.6;cursor:wait}
 #formMessage {font-size:11px;margin-top:10px;color:#64748b;line-height:1.8}
 
 /* Footer */
@@ -411,7 +433,7 @@ footer p,footer a {font-size:11px;color:#aabbd2;line-height:2.2}
           <textarea id="newsContent" maxlength="5000" required placeholder="اكتب تفاصيل الخبر هنا..."></textarea>
         </div>
         <button class="btn btn-blue" type="submit" id="submitButton">إرسال الخبر للمراجعة</button>
-        <div id="formMessage">يجب تسجيل الدخول قبل إرسال خبر.</div>
+        <div id="formMessage">يجب تسجيل الدخول والحصول على التوثيق قبل النشر.</div>
       </form>
     </div>
   </section>
@@ -450,13 +472,17 @@ footer p,footer a {font-size:11px;color:#aabbd2;line-height:2.2}
 <script type="module">
 import { firebaseConfig } from "./firebase-config.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+
 import {
   getAuth, onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+
 import {
   getFirestore, collection, getDocs, query, where,
-  addDoc, serverTimestamp
+  addDoc, serverTimestamp, doc, getDoc
 } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
 const app = initializeApp(firebaseConfig);
@@ -471,6 +497,8 @@ const submitButton = document.getElementById("submitButton");
 
 let currentUser = null;
 let allNews = [];
+let authReady = false;
+let canPublish = false;
 
 document.getElementById("menuButton").addEventListener("click", () => {
   document.getElementById("navigation").classList.toggle("open");
@@ -482,17 +510,50 @@ document.querySelectorAll("#navigation a").forEach(link => {
   });
 });
 
-onAuthStateChanged(auth, user => {
+// التحقق من الحساب
+onAuthStateChanged(auth, async user => {
   currentUser = user;
+  authReady = true;
+  canPublish = false;
 
   document.getElementById("loginButton").hidden = !!user;
   document.getElementById("logoutButton").hidden = !user;
 
-  formMessage.textContent = user
-    ? "أنت مسجل الدخول. يمكنك إرسال خبر للمراجعة."
-    : "يجب تسجيل الدخول قبل إرسال خبر.";
+  if (!user) {
+    formMessage.textContent =
+      "يجب تسجيل الدخول والحصول على التوثيق قبل النشر.";
+    return;
+  }
+
+  try {
+    await user.reload();
+
+    if (!user.emailVerified) {
+      formMessage.textContent =
+        "يجب تأكيد بريدك الإلكتروني أولًا.";
+      return;
+    }
+
+    const profile = await getDoc(doc(db, "users", user.uid));
+
+    if (!profile.exists() || profile.data().verified !== true) {
+      formMessage.textContent =
+        "حسابك غير موثّق. لا يمكنك نشر الأخبار حاليًا.";
+      return;
+    }
+
+    canPublish = true;
+    formMessage.textContent =
+      "✓ حسابك موثّق! يمكنك إرسال الأخبار للمراجعة.";
+
+  } catch (error) {
+    console.error(error);
+    formMessage.textContent =
+      "تعذر التحقق من حالة حسابك.";
+  }
 });
 
+// تسجيل الخروج
 document.getElementById("logoutButton").addEventListener("click", async () => {
   await signOut(auth);
   location.reload();
@@ -503,11 +564,13 @@ function formatDate(timestamp) {
   return timestamp.toDate().toLocaleDateString("ar-EG");
 }
 
+// إنشاء بطاقة الخبر
 function renderNews(newsItems) {
   newsGrid.innerHTML = "";
 
   if (newsItems.length === 0) {
-    newsGrid.innerHTML = '<div class="empty">لا توجد أخبار مطابقة حاليًا.</div>';
+    newsGrid.innerHTML =
+      '<div class="empty">لا توجد أخبار مطابقة حاليًا.</div>';
     return;
   }
 
@@ -536,7 +599,18 @@ function renderNews(newsItems) {
     footer.className = "news-footer";
 
     const author = document.createElement("span");
-    author.textContent = "✍️ " + (news.author || "NK News");
+    author.className = "author-info";
+    author.appendChild(
+      document.createTextNode("✍️ " + (news.author || "NK News"))
+    );
+
+    if (news.isVerified === true) {
+      const badge = document.createElement("span");
+      badge.className = "verified-badge";
+      badge.textContent = "✓";
+      badge.title = "حساب موثّق";
+      author.appendChild(badge);
+    }
 
     const date = document.createElement("span");
     date.textContent = formatDate(news.createdAt);
@@ -544,10 +618,12 @@ function renderNews(newsItems) {
     footer.append(author, date);
     body.append(meta, title, content, footer);
     card.append(art, body);
+
     newsGrid.appendChild(card);
   });
 }
 
+// ترتيب الأخبار من الأحدث
 function sortNews(items) {
   return items.sort((a, b) => {
     const dateA = a.createdAt?.toMillis?.() || 0;
@@ -556,6 +632,7 @@ function sortNews(items) {
   });
 }
 
+// تحميل الأخبار وحالة التوثيق العامة
 async function loadNews() {
   try {
     const newsQuery = query(
@@ -565,20 +642,50 @@ async function loadNews() {
 
     const snapshot = await getDocs(newsQuery);
 
-    allNews = sortNews(snapshot.docs.map(item => item.data()));
+    const newsItems = await Promise.all(
+      snapshot.docs.map(async item => {
+        const news = item.data();
+        let isVerified = false;
+
+        if (news.uid) {
+          try {
+            const profile = await getDoc(
+              doc(db, "publicProfiles", news.uid)
+            );
+
+            isVerified =
+              profile.exists() &&
+              profile.data().verified === true;
+
+          } catch (error) {
+            console.error("تعذر تحميل توثيق الكاتب:", error);
+          }
+        }
+
+        return {
+          ...news,
+          isVerified
+        };
+      })
+    );
+
+    allNews = sortNews(newsItems);
     renderNews(allNews);
 
     if (allNews.length > 0) {
       document.getElementById("tickerText").textContent =
-        "آخر الأخبار: " + (allNews[0].title || "تابع أحدث المستجدات");
+        "آخر الأخبار: " +
+        (allNews[0].title || "تابع أحدث المستجدات");
     }
+
   } catch (error) {
-    newsGrid.innerHTML =
-      '<div class="empty">تعذر تحميل الأخبار. تحقق من اتصال Firebase وقواعد البيانات.</div>';
     console.error(error);
+    newsGrid.innerHTML =
+      '<div class="empty">تعذر تحميل الأخبار. تحقق من اتصال Firebase.</div>';
   }
 }
 
+// البحث
 searchInput.addEventListener("input", () => {
   const term = searchInput.value.trim().toLowerCase();
 
@@ -590,47 +697,9 @@ searchInput.addEventListener("input", () => {
   renderNews(filtered);
 });
 
+// نشر خبر
 publishForm.addEventListener("submit", async event => {
   event.preventDefault();
 
-  if (!currentUser) {
-    formMessage.textContent = "سجّل الدخول أولًا لإرسال الأخبار.";
-    return;
-  }
-
-  const title = document.getElementById("newsTitle").value.trim();
-  const content = document.getElementById("newsContent").value.trim();
-
-  if (!title || !content) {
-    formMessage.textContent = "يرجى كتابة العنوان والتفاصيل.";
-    return;
-  }
-
-  submitButton.disabled = true;
-  submitButton.textContent = "جارٍ الإرسال...";
-
-  try {
-    await addDoc(collection(db, "news"), {
-      title,
-      content,
-      author: currentUser.displayName || currentUser.email || "مستخدم",
-      uid: currentUser.uid,
-      status: "pending",
-      createdAt: serverTimestamp()
-    });
-
-    publishForm.reset();
-    formMessage.textContent = "تم إرسال خبرك بنجاح! سيظهر بعد موافقة المشرف.";
-  } catch (error) {
-    formMessage.textContent = "لم يتم إرسال الخبر: " + error.message;
-  } finally {
-    submitButton.disabled = false;
-    submitButton.textContent = "إرسال الخبر للمراجعة";
-  }
-});
-
-loadNews();
-</script>
-</body>
-      </html>
-  
+  if (!authReady) {
+    formMessage.textContent = "ان
