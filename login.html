@@ -9,9 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -24,15 +22,9 @@ body {
   padding: 20px;
 }
 
-.wrapper {
-  width: 100%;
-  max-width: 430px;
-}
+.wrapper { width: 100%; max-width: 430px; }
 
-.brand {
-  text-align: center;
-  margin-bottom: 25px;
-}
+.brand { text-align: center; margin-bottom: 25px; }
 
 .logo {
   font-size: 36px;
@@ -40,14 +32,8 @@ body {
   color: #142746;
 }
 
-.logo span {
-  color: #2870ec;
-}
-
-.brand p {
-  color: #758198;
-  margin: 0;
-}
+.logo span { color: #2870ec; }
+.brand p { color: #758198; margin: 0; }
 
 .card {
   background: white;
@@ -133,21 +119,17 @@ input:focus {
   cursor: pointer;
 }
 
-.submit:disabled {
-  opacity: .6;
-}
+.submit:disabled { opacity: .6; cursor: wait; }
 
 #message {
   font-size: 13px;
   text-align: center;
   margin-top: 15px;
   color: #d13c3c;
+  line-height: 1.9;
 }
 
-.back {
-  text-align: center;
-  margin-top: 20px;
-}
+.back { text-align: center; margin-top: 20px; }
 
 .back a {
   text-decoration: none;
@@ -161,12 +143,10 @@ footer {
   font-size: 12px;
   margin-top: 25px;
 }
-
 </style>
 </head>
 
 <body>
-
 <div class="wrapper">
 
   <div class="brand">
@@ -175,35 +155,31 @@ footer {
   </div>
 
   <div class="card">
-
     <h2 id="heading">مرحبًا بعودتك</h2>
     <div class="subtitle" id="subtitle">
       سجّل الدخول لمتابعة أخبار العالم
     </div>
 
     <div class="tabs">
-      <button class="active" id="loginTab">تسجيل الدخول</button>
-      <button id="registerTab">إنشاء حساب</button>
+      <button class="active" id="loginTab" type="button">تسجيل الدخول</button>
+      <button id="registerTab" type="button">إنشاء حساب</button>
     </div>
 
     <form id="authForm">
-
-      <label>البريد الإلكتروني</label>
+      <label for="email">البريد الإلكتروني</label>
       <input id="email" type="email"
-      placeholder="example@email.com" required>
+        placeholder="example@email.com" required>
 
-      <label>كلمة المرور</label>
+      <label for="password">كلمة المرور</label>
       <input id="password" type="password"
-      placeholder="كلمة المرور" minlength="6" required>
+        placeholder="كلمة المرور" minlength="6" required>
 
-      <button class="submit" id="submitBtn">
+      <button class="submit" id="submitBtn" type="submit">
         تسجيل الدخول
       </button>
-
     </form>
 
     <div id="message"></div>
-
   </div>
 
   <div class="back">
@@ -211,7 +187,6 @@ footer {
   </div>
 
   <footer>© 2026 NK News · جميع الحقوق محفوظة</footer>
-
 </div>
 
 <script type="module">
@@ -220,10 +195,12 @@ import { initializeApp }
 from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 
 import {
-getAuth,
-createUserWithEmailAndPassword,
-signInWithEmailAndPassword,
-onAuthStateChanged
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendEmailVerification,
+  signOut,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 
 import { firebaseConfig }
@@ -233,6 +210,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 let mode = "login";
+let handlingAuth = false;
 
 const loginTab = document.getElementById("loginTab");
 const registerTab = document.getElementById("registerTab");
@@ -240,6 +218,11 @@ const heading = document.getElementById("heading");
 const subtitle = document.getElementById("subtitle");
 const submitBtn = document.getElementById("submitBtn");
 const message = document.getElementById("message");
+
+function showMessage(text, color = "#d13c3c") {
+  message.style.color = color;
+  message.textContent = text;
+}
 
 function setMode(newMode) {
   mode = newMode;
@@ -262,10 +245,21 @@ function setMode(newMode) {
 loginTab.onclick = () => setMode("login");
 registerTab.onclick = () => setMode("register");
 
-onAuthStateChanged(auth, user => {
-  if (user) {
+onAuthStateChanged(auth, async user => {
+  if (!user || handlingAuth) return;
+
+  if (user.emailVerified) {
     window.location.href = "index.html";
+    return;
   }
+
+  handlingAuth = true;
+  await signOut(auth);
+  showMessage(
+    "بريدك الإلكتروني غير مؤكد. افتح رسالة التحقق التي وصلتك ثم سجّل الدخول.",
+    "#d18b18"
+  );
+  handlingAuth = false;
 });
 
 document.getElementById("authForm").onsubmit = async (e) => {
@@ -275,38 +269,70 @@ document.getElementById("authForm").onsubmit = async (e) => {
   const password = document.getElementById("password").value;
 
   submitBtn.disabled = true;
-  message.textContent = "جارٍ تنفيذ طلبك...";
+  showMessage("جارٍ تنفيذ طلبك...", "#1769e0");
 
   try {
-    if (mode === "login") {
-      await signInWithEmailAndPassword(auth, email, password);
+
+    if (mode === "register") {
+
+      const result = await createUserWithEmailAndPassword(
+        auth, email, password
+      );
+
+      await sendEmailVerification(result.user);
+      await signOut(auth);
+
+      showMessage(
+        "تم إنشاء حسابك! 📩 أرسلنا رابط التحقق إلى بريدك الإلكتروني. افتح الرسالة واضغط على الرابط، ثم سجّل الدخول.",
+        "green"
+      );
+
     } else {
-      await createUserWithEmailAndPassword(auth, email, password);
+
+      const result = await signInWithEmailAndPassword(
+        auth, email, password
+      );
+
+      if (!result.user.emailVerified) {
+
+        await sendEmailVerification(result.user);
+        await signOut(auth);
+
+        showMessage(
+          "بريدك غير مؤكد بعد. أرسلنا لك رابط تحقق جديدًا. افتح بريدك واضغط عليه ثم سجّل الدخول.",
+          "#d18b18"
+        );
+
+      } else {
+
+        showMessage("تم التحقق بنجاح! جارٍ تحويلك...", "green");
+        window.location.href = "index.html";
+
+      }
     }
 
-    message.style.color = "green";
-    message.textContent = "تم بنجاح!";
-
   } catch (error) {
-    message.style.color = "#d13c3c";
 
     const errors = {
       "auth/email-already-in-use": "هذا البريد مسجل بالفعل.",
       "auth/invalid-email": "البريد الإلكتروني غير صحيح.",
       "auth/invalid-credential": "البريد أو كلمة المرور غير صحيحة.",
       "auth/weak-password": "كلمة المرور ضعيفة.",
-      "auth/network-request-failed": "تحقق من اتصال الإنترنت."
+      "auth/network-request-failed": "تحقق من اتصال الإنترنت.",
+      "auth/too-many-requests": "محاولات كثيرة، حاول لاحقًا.",
+      "auth/too-many-requests": "محاولات كثيرة، حاول لاحقًا."
     };
 
-    message.textContent =
-      errors[error.code] || "حدث خطأ، حاول مرة أخرى.";
-  }
+    showMessage(
+      errors[error.code] || "حدث خطأ: " + error.message
+    );
 
-  submitBtn.disabled = false;
+  } finally {
+    submitBtn.disabled = false;
+  }
 };
 
 </script>
-
 </body>
-  </html>
+      </html>
   
